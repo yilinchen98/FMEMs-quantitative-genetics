@@ -4,7 +4,7 @@ library(lme4)
 library(Matrix)
 
 # Import data
-setwd("D:/KCL_2023-2027_PhD/Year 1/Genetics/TC_R_implementation/R code")
+setwd("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code")
 TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4) # n = 6860 observations
