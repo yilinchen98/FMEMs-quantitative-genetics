@@ -87,7 +87,7 @@ A <- getA(ped)[163:1035,163:1035]
 
 ## Reparameterise the design matrix
 Lt <- chol(A) # upper triangular matrix of Cholesky decomposition
-p = 3 # dim of genetic random effect vector
+p = 3 # dim of a single genetic random effect vector
 I <- as(diag(p), "dgCMatrix")
 
 M <- kronecker(Lt, I) # use in Z* = ZM
@@ -111,7 +111,7 @@ colnames(phi) <- c("phi1", "phi2", "phi3")
 ### update the dataframe to include basis functions
 df <- cbind(df,phi)
 
-## ## Fit mixed-effect models
+## Fit mixed-effect models
 ### use a fixed regression of the same form of random regression 
 fmmFormula <- trait ~ df$phi1 + df$phi2 + df$phi3 + (-1 + df$phi1 + df$phi2 + df$phi3 | df$id) + (-1 + df$phi1 + df$phi2 + df$phi3 | df$id) 
 ### define the mixed-model formula
@@ -126,10 +126,9 @@ Z <- cbind(ZG, ZE) # the updated random effect design matrix
 ### Modularisation
 fmmParsedForm$reTrms$Zt <- t(Z) # Update Z in the reTrms term
 fmmDevFun <- do.call(mkLmerDevfun,fmmParsedForm) # update the objective function
-fmmOpitimize <- optimizeLmer(devfun=fmmDevFun) # update the optimisation module
+fmmOpitimize <- optimizeLmer(devfun=fmmDevFun)# update the optimisation module
 # returns the mixed-effect model
 fmm <- mkMerMod(rho=environment(fmmDevFun),opt=fmmOpitimize, reTrms=fmmParsedForm$reTrms, fr=fmmParsedForm$fr)  
-
 ##############################################################
 # Let us first test the previous fitting procedure 
 # on a small data set consisting of the first 3 subjects
