@@ -7,9 +7,10 @@ In evolutionary biology, function-valued traits, such as growth trajectories, ar
 - `TRFUN25PUP4.DAT`: contain 873 individuals and 6860 measurements (body mass), with an average of approximately 8 measurements per individual. Sampling points are not taken at fixed times as they vary in number and location, and the range of days measured is 1-25 days.
 - `TC_alignment_fda.R`: smooth data using penalised smoothing spline and align curves by continuous registration from the `fda` package.
 - `TC_smoothing_FPCA.R`: smooth, align data and run functional principal component analysis using the `fdasrvf` package.
-- `convert_to_basisfunctions.R`: convert eigenvectors to eigenfunctions using interpolation.
+- `convert_to_basisfunctions.R`: function which converts eigenvectors to eigenfunctions using interpolation.
 - `TC_computingZ.R`: use principal components as basis functions and compute the random-effect design matrix $Z$ for the mixed-effects model.
 - `TC_fit_FMEMs.R`: use principal components as basis functions for both fixed and random effects and fit the mixed-effects model using the modularised functions in `lme4` package.
+- `fit_genetic_fmm.R`: function which uses the `lme4` package to fit a linear mixed-effect model to genetic data, with a specified additive genetic relationship matrix $A$. In this particular format, both fixed effects and random effects are fitted using the same basis functions (principal components obtained from running FPCA).
 ### R package help documents
 - `fdasrvf`: perform alignment, PCA, and modelling of multidimensional and unidimensional functions using the square-root velocity framework.
 - `pedigreemm`: fit pedigree-based mixed-effects models.
