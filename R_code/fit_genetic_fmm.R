@@ -27,8 +27,8 @@ fit_genetic_fmm <- function(formula, data, A, phi)
   
   ### Compute the random-effect matrix
   Z_pre <- t(fmmParsedForm$reTrms$Zt)
-  ZE <- Z_pre[,1:dim(M)[1]] %*% M # update the genetic-random effect matrix
   ZG <- Z_pre[,1:dim(M)[1]] # environmental random-effect matrix
+  ZE <- Z_pre[,1:dim(M)[1]] %*% M # update the genetic-random effect matrix
   Z <- cbind(ZG, ZE) # the updated random effect design matrix
   
   ### Modularisation
