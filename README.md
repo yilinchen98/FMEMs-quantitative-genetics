@@ -10,8 +10,9 @@ In evolutionary biology, function-valued traits, such as growth trajectories, ar
 - `convert_to_basisfunctions.R`: function which converts eigenvectors to eigenfunctions using interpolation.
 - `TC_computingZ.R`: use principal components as basis functions and compute the random-effect design matrix $Z$ for the mixed-effects model.
 - `TC_fit_FMEMs.R`: use principal components as basis functions for both fixed and random effects and fit the mixed-effects model using the modularised functions in `lme4` package.
-- `fit_genetic_fmm.R`: function which uses the `lme4` package to fit a linear mixed-effect model to genetic data, with a specified additive genetic relationship matrix $A$. In this particular format, both fixed effects and random effects are fitted using the same basis functions (principal components obtained from running FPCA).
-- `TC_test.R`: run the function `fit_genetic_fmm` to fit the genetic mixed-effect model on `TRFUN25PUP4` dataset. 
+- `fit_genetic_fmm.R`: function which uses the `lme4` package to fit a linear mixed-effect model to genetic data, with a specified additive genetic relationship matrix $A$.
+- `TC_fit_RR.R`: fit the genetic mixed-effect model with both fixed and random effects represented by the same set of principal components as basis functions.
+- `TC_fit_mean_rand.R`: fit the genetic mixed-effect model with the population mean as the fixed effect and the random effect represented using principal components.
 ### R package help documents
 - `fdasrvf`: perform alignment, PCA, and modelling of multidimensional and unidimensional functions using the square-root velocity framework.
 - `pedigreemm`: fit pedigree-based mixed-effects models.
