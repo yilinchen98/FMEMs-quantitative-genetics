@@ -9,14 +9,11 @@ TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4) 
 
-indices <- df$id
-trait <- df$trait
-time <- df$x
-FirstUniqueIdPos <- which(duplicated(indices) == FALSE)
+FirstUniqueIdPos <- which(duplicated(df$id) == FALSE)
 N = length(FirstUniqueIdPos) # N = 873 subjects
-n = length(indices) # n = 6860 observations
-age_list <- split(time,indices)
-trait_list <- split(trait,indices)
+n = length(df$id) # n = 6860 observations
+age_list <- split(df$x,df$id)
+trait_list <- split(df$trait,df$id)
 
 # Rescale time interval to [0,1]
 ## x = (x -min(x))/(max(x) - min(x))
@@ -25,7 +22,7 @@ for (i in 1:N){
   age_list_new[[i]] = (age_list[[i]]-min(age_list[[i]]))/(max(age_list[[i]])-min(age_list[[i]]))
 }
 
-df$x <- unsplit(age_list_new,indices)
+df$x <- unsplit(age_list_new,df$id)
 # Curve alignment
 ## Use align_fPCA from the package fdasrvf
 ## Use smooth.spline as basis functions
@@ -77,7 +74,7 @@ pcscores_logmass <- fpcaobj_logmass$x # principal component scores
 # Fit FMMs
 ## Extract the relationship matrix A from the data
 
-pos = indices[FirstUniqueIdPos] # extract ids for all subjects
+pos = df$id[FirstUniqueIdPos] # extract ids for all subjects
 sire_id = df$sire[FirstUniqueIdPos] # extract ids for sire
 dam_id = df$dam[FirstUniqueIdPos] # extract ids for dam
 
