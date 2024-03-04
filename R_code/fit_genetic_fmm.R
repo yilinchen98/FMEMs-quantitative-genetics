@@ -14,6 +14,8 @@ fit_genetic_fmm <- function(formula, data, A, phi)
   #'@return returns a fitted mixed-effect model
   
   # Random effect parameterisation
+  require(lme4)
+  require(Matrix)
   
   Lt <- as(chol(A), "dgCMatrix") # cholesky decomposition of A
   p <- dim(phi)[2] # number of elements of the functional basis
