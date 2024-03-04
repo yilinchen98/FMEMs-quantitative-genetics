@@ -10,13 +10,11 @@ names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4) # n = 6860 observations
 
 # Plot raw data
-indices <- df$id
-trait <- df$trait
-time <- df$x
-FirstUniqueIdPos <- which(duplicated(indices) == FALSE)
-N = length(FirstUniqueIdPos)
-age_list <- split(time,indices)
-trait_list <- split(trait,indices)
+FirstUniqueIdPos <- which(duplicated(df$id) == FALSE)
+N = length(FirstUniqueIdPos) # N = 873 subjects
+n = length(df$id) # n = 6860 observations
+age_list <- split(df$x,df$id)
+trait_list <- split(df$trait,df$id)
 
 # check missing data
 which(is.na(df$x))
