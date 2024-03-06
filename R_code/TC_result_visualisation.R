@@ -47,13 +47,6 @@ mass_warp <- register_growth_curve$gam
 ## Compute the mean curve
 mean_mass <- apply(mass_aligned, 1, mean)
 
-# Run FPCA on the aligned curves
-## For the growth curve with zero mean
-fpcaobj_mass <- prcomp(x=t(mass_aligned), retx = TRUE, center = TRUE) 
-sdeval_mass <- fpcaobj_mass$sdev # the singular value of X
-eigen_mass <- fpcaobj_mass$rotation # eigen vectors
-pcscores_mass <- fpcaobj_mass$x # principal component scores
-
 ## Plot the aligned mass curve and the population mean
 par(mfrow=c(1,2))
 matplot(agefine,mass_warp, type = "l", col=1:N, 
@@ -65,6 +58,13 @@ matplot(agefine,mass_aligned, type = "l", col=1:N,
 
 lines(agefine, mean_mass, col="red", lwd=3)
 legend(x="bottomright", legend="mean", lwd=3.0, col="red")
+
+# Run FPCA on the aligned curves
+## For the growth curve with zero mean
+fpcaobj_mass <- prcomp(x=t(mass_aligned), retx = TRUE, center = TRUE) 
+sdeval_mass <- fpcaobj_mass$sdev # the singular value of X
+eigen_mass <- fpcaobj_mass$rotation # eigen vectors
+pcscores_mass <- fpcaobj_mass$x # principal component scores
 
 # Convert discrete eigenvectors to eigenfunctions 
 
