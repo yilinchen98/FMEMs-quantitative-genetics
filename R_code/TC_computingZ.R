@@ -98,7 +98,7 @@ phi_list <- list()
 
 for (i in 1:N){
   phi <- convert_to_basisfunctions(t = agefine, eigenvecs = eigen_mass[,1:p],
-                                       tout = age_list_new[[i]], method = "linear")
+                                       tout = age_list_new[[i]])
   phi_list[[i]] <- phi
 }
 
@@ -107,27 +107,6 @@ colnames(phi) <- c("phi1", "phi2", "phi3")
 
 ### update the dataframe to include basis functions
 df <- cbind(df,phi)
-
-### Test on a smaller set, just containing 3 subjects
-test_df <- df[1:25,]
-test_formula <- trait ~ -1 + (-1 + test_df$phi1 + test_df$phi2 + test_df$phi3 | test_df$id)
-test_parsedFormula <- lFormula(formula = test_formula, data = test_df)
-testZEt <- test_parsedFormula$reTrms$Zt 
-testZEt_standard <- t(as.matrix(testZEt)) # environmental random effect matrix
-
-### Calculate the relation matrix A
-test_pede <- editPed(sire = as.character(c(1,1,1)), dam = as.character(c(101,101,101)), 
-                     label = as.character(c(10001,10002,10003)))
-test_ped <- with(test_pede, pedigree(label=label,sire = sire, dam=dam))
-test_A <- as.matrix(getA(test_ped)[3:5,3:5])
-test_M <- as.matrix(kronecker(chol(test_A),I))
-
-all(test_M == as.matrix(M)[1:9,1:9]) # True
-
-testZG_prep <- t(testZEt)
-testZG <- testZG_prep %*% test_M
-testZG_standard <- as.matrix(testZG_prep)
-testZ <- cbind(testZG_standard,testZEt_standard) # genetic random effect matrix
 
 ### now only focus on the environmental random effect 
 Zformula <- trait ~ -1 + (-1 + df$phi1 + df$phi2 + df$phi3 | df$id)
@@ -140,3 +119,26 @@ ZG <- Z_prep %*% M
 
 ### combine two random effect matrices
 Z <- cbind(ZG, ZE)
+
+######################################################################
+#Test on a smaller set, just containing 3 subjects
+test_df <- df[1:25,]
+
+### Calculate the relation matrix A
+test_pede <- editPed(sire = as.character(c(1,1,1)), dam = as.character(c(101,101,101)), 
+                     label = as.character(c(10001,10002,10003)))
+test_ped <- with(test_pede, pedigree(label=label,sire = sire, dam=dam))
+test_A <- as.matrix(getA(test_ped)[3:5,3:5])
+test_M <- as.matrix(kronecker(chol(test_A),I))
+all(test_M == as.matrix(M)[1:9,1:9]) # True
+
+### Fit only random effect
+test_formula <- trait ~ -1 + (-1 + test_df$phi1 + test_df$phi2 + test_df$phi3 | test_df$id)
+test_parsedFormula <- lFormula(formula = test_formula, data = test_df)
+testZEt <- test_parsedFormula$reTrms$Zt 
+testZEt_standard <- t(as.matrix(testZEt)) # environmental random effect matrix
+
+testZG_prep <- t(testZEt) # duplicate ZE
+testZG <- testZG_prep %*% test_M # update the genetic random effect design matrix
+testZG_standard <- as.matrix(testZG_prep)
+testZ <- cbind(testZG_standard,testZEt_standard) # genetic random effect matrix
