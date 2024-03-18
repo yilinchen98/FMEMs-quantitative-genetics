@@ -17,10 +17,10 @@ fit_genetic_fmm <- function(formula, data, A, phi)
   require(lme4)
   require(Matrix)
   
-  Lt <- as(chol(A), "dgCMatrix") # cholesky decomposition of A
+  L <- as(t(chol(A)), "dgCMatrix") # cholesky decomposition of A
   p <- dim(phi)[2] # number of elements of the functional basis
   I_p <- as(diag(p), "dgCMatrix")
-  M <- kronecker(Lt, I_p) # used to update the genetic design matrix Z_E = ZM
+  M <- kronecker(L, I_p) # used to update the genetic design matrix Z_E = ZM
   
   # Fit mixed-effect model
   
@@ -29,8 +29,8 @@ fit_genetic_fmm <- function(formula, data, A, phi)
   
   ### Compute the random-effect matrix
   Z_pre <- t(fmmParsedForm$reTrms$Zt)
-  ZG <- Z_pre[,1:dim(M)[1]] # environmental random-effect matrix
-  ZE <- Z_pre[,1:dim(M)[1]] %*% M # update the genetic-random effect matrix
+  ZE <- Z_pre[,1:dim(M)[1]] # environmental random-effect matrix
+  ZG <- Z_pre[,1:dim(M)[1]] %*% M # update the genetic-random effect matrix
   Z <- cbind(ZG, ZE) # the updated random effect design matrix
   
   ### Modularisation
