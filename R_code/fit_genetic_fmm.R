@@ -20,7 +20,7 @@ fit_genetic_fmm <- function(formula, data, A, phi)
   L <- as(t(chol(A)), "dgCMatrix") # cholesky decomposition of A
   p <- dim(phi)[2] # number of elements of the functional basis
   I_p <- as(diag(p), "dgCMatrix")
-  M <- kronecker(L, I_p) # used to update the genetic design matrix Z_E = ZM
+  M <- kronecker(L, I_p) # used to update the genetic design matrix Z_G = ZM
   
   # Fit mixed-effect model
   
