@@ -14,7 +14,6 @@ library(Matrix)
 library(fdasrvf)
 library(lme4)
 library(pedigreemm)
-library(npreg)
 library(ggplot2)
 library(plotly)
 ```
@@ -59,7 +58,7 @@ for (i in 1:N) {
 
 # Data smoothing
 
-Use penalised smoothing spline as basis functions. Here we take two ways to smooth the data. First, smooth body mass on its original. Second, smooth growth curves on the logrithmic scale and then take exponential to recover body mass. This imposes positive smoothing (same methodology as `smooth.pos()` in the **fda** package). We also report the smoothing parameter $\lambda$ selected by GCV.
+Use penalised smoothing spline as basis functions. Here we take two ways to smooth the data. First, smooth body mass on its original. Second, smooth growth curves on the logarithmic scale and then take exponential to recover body mass. This imposes positive smoothing (same methodology as `smooth.pos()` in the **fda** package). We also report the smoothing parameter $\lambda$ selected by GCV.
 
 ```{r}
 agefine <- seq(0,1,length=100) # create a fine time grid
@@ -145,7 +144,7 @@ for (i in 1:N){
 }
 ```
 
-The most smoothing parameter $\lambda$s selected by GCV are quite small. Let us restrict $\lambda \le 10^{-4}$, and re-smooth growth curves. The adjusted smooth growth curves are store in the matrix `trait_hat`.
+Most smoothing parameter $\lambda$s selected by GCV are quite small. Let us restrict $\lambda \le 10^{-4}$, and re-smooth growth curves. The adjusted smooth growth curves are stored in the matrix `trait_hat`.
 
 ```{r include=FALSE}
 large_lam <- which(lambda_logmass > 1e-4)
@@ -171,7 +170,7 @@ for (i in 1:length(large_lam)){
 }
 ```
 
-```{r include=FLASE}
+```{r include=FALSE}
 trait_hat <- pred_mass
 for (i in 1: length(large_lam)){
   trait_hat[,large_lam[i]] <- mass_adjusted[,i]
@@ -256,10 +255,10 @@ fit_genetic_fmm <- function(formula, data, A, phi)
   require(lme4)
   require(Matrix)
   
-  Lt <- as(chol(A), "dgCMatrix") # cholesky decomposition of A
+  L <- as(t(chol(A)), "dgCMatrix") # cholesky decomposition of A
   p <- dim(phi)[2] # number of elements of the functional basis
   I_p <- as(diag(p), "dgCMatrix")
-  M <- kronecker(Lt, I_p) # used to update the genetic design matrix Z_E = ZM
+  M <- kronecker(L, I_p) # used to update the genetic design matrix Z_E = ZM
   
   # Fit mixed-effect model
   
@@ -268,8 +267,8 @@ fit_genetic_fmm <- function(formula, data, A, phi)
   
   ### Compute the random-effect matrix
   Z_pre <- t(fmmParsedForm$reTrms$Zt)
-  ZG <- Z_pre[,1:dim(M)[1]] # environmental random-effect matrix
-  ZE <- Z_pre[,1:dim(M)[1]] %*% M # update the genetic-random effect matrix
+  ZE <- Z_pre[,1:dim(M)[1]] # environmental random-effect matrix
+  ZG <- Z_pre[,1:dim(M)[1]] %*% M # update the genetic-random effect matrix
   Z <- cbind(ZG, ZE) # the updated random effect design matrix
   
   ### Modularisation

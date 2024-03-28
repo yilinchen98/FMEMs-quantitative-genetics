@@ -37,23 +37,27 @@ Then we will generate a set of responses and fit the mixed-effect model to get t
 
 ## Simulation process
 
-Step 1: Fix functional basis, covariance matrices and residual variance. Here we will use 3 B-spline basis.
+Step 1: Fix functional basis, covariance matrices and residual variance. Here we will use 5 cubic B-spline basis.
 ```{r}
 ### use b-spline basis
-basisObj <- create.bspline.basis(c(0,1), nbasis = 3, norder = 3)
+basisObj <- create.bspline.basis(c(0,1), nbasis = 5, norder = 4)
 ### genetic covariance matrix
-C_gen <-  matrix(c(400, 40, 0,
-                   40, 200, 40,
-                   0, 40, 200), nrow = 3, byrow = T)
+C_gen <- matrix(c(750, 10 ,130, 80, 250,
+              10, 800, 30, 15, 40,
+              130, 30, 700, 50, 130,
+              80, 15, 50, 420, 50,
+              250, 40, 130, 50, 330), nrow = 5, byrow = T)
 ### environmental covariance matrix
-C_env <- matrix(c(400, 40, 0,
-                  40, 200, 40,
-                  0, 40, 200), nrow = 3, byrow = T)
+C_env <- matrix(c(750, 10 ,130, 80, 250,
+              10, 800, 30, 15, 40,
+              130, 30, 700, 50, 130,
+              80, 15, 50, 420, 50,
+              250, 40, 130, 50, 330), nrow = 5, byrow = T)
 ### residual variance
 sigma2 <- 50
 ```
 
-```{r echo=FALSE}
+```{r echo=FALSE, warning=FALSE, message=FALSE, out.width="150%"}
 ## Plot the true covariances functions
 time_rang <- seq(0,1,length=10)
 basis <- eval.basis(time_rang, basisObj) 
@@ -61,32 +65,43 @@ C_gen_fun <- basis %*% C_gen %*% t(basis)
 C_env_fun <- basis %*% C_env %*% t(basis)
 P_true <- C_gen_fun + C_env_fun
 
-fit4 <- plot_ly(x = time_rang, y = time_rang, z = ~C_gen_fun,
-                type = 'surface', showscale = FALSE) %>% 
-  layout(title = "TRUE Gen Variance", 
-               scene = list(zaxis = list(title=""),
-                            xaxis = list(title = "time"),
-                            yaxis = list(title = "time")))
-fit5 <- plot_ly(x = time_rang, y = time_rang, z = ~C_env_fun,
-                type = 'surface', showscale = FALSE) %>% 
-  layout(title = "TRUE Env Variance", 
-         scene = list(zaxis = list(title=""),
-                      xaxis = list(title = "time"),
-                      yaxis = list(title = "time")))
-fit6 <- plot_ly(x = time_rang, y = time_rang, z = ~P_true,
-                type = 'surface', showscale = FALSE) %>% 
-  layout(title = "TRUE Phen Variance", 
-         scene = list(zaxis = list(title=""),
-                      xaxis = list(title = "time"),
-                      yaxis = list(title = "time")))
+sim1 <- plot_ly(x = time_rang, y = time_rang, z = ~C_gen_fun, scene='scene1') 
+sim1 <- sim1 %>% add_surface(showscale=FALSE)
 
-fit4
-fit5
-fit6
+sim2 <- plot_ly(x = time_rang, y = time_rang,z = ~C_env_fun, scene='scene2') 
+sim2 <- sim2 %>% add_surface(showscale=FALSE)
+
+sim3 <- plot_ly(x = time_rang, y = time_rang,z = ~P_true, scene='scene3') 
+sim3 <- sim3 %>% add_surface(showscale=FALSE)
+
+fig1 <- subplot(sim1, sim2, sim3) 
+fig1 <- fig1 %>% layout(title = "Covariance Plot",
+                              scene = list(domain=list(x=c(0,0.32),y=c(0.25,1)),
+                                           xaxis=list(title = "time"),
+                                           yaxis =list(title = "time"),
+                                           zaxis=list(range=c(-10,1600),
+                                                      title = "Gen"),
+                                           aspectmode='cube'),
+                              scene2 = list(domain=list(x=c(0.34,0.66),y=c(0.25,1)),
+                                            xaxis=list(title = "time"),
+                                            yaxis =list(title = "time"), 
+                                            zaxis=list(range=c(-10,1600),
+                                                       title = "Env"),
+                                            aspectmode='cube'),
+                              scene3 = list(domain=list(x=c(0.68,1),y=c(0.25,1)),
+                                            xaxis=list(title = "time"),
+                                            yaxis =list(title = "time"), 
+                                            zaxis=list(range=c(-10,1600),
+                                                       title = "Phe"),
+                                            aspectmode='cube'))
+
+fig1
 ```
 
 Step 2: Set the distribution of the random effect vectors $\bf{\alpha}$ and $\bf{\gamma}$.
-Remark: we will assume in total there are 873 individuals so the same genetic relationship matrix $A$ computed in developing our mixed-effect model will be used in our simulation study. For now, assume each individual has 10 regular sampling points from the unit interval. Later we will change the number of observations per individual to see how this will affect the covariance estimation.
+
+Remark: we will assume in total there are 873 individuals so the same genetic relationship matrix $A$ computed in developing our mixed-effect model will be used in our simulation study. For now, assume each individual has 10 regular sampling points from the unit interval. We will use 3 (or 4) principal components to re-construct the covariance functions.
+
 ```{r include =FALSE}
 ### Calculate the genetic relationship matrix A (use the TC dataset)
 setwd("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code")
@@ -129,42 +144,45 @@ res <- rmvn(n=50, mu=mu_res, sigma = res_cov) # error vector
 ```
 
 Step 3: Use the modular functions of `lme4()` to compute the random effect design matrices.  
+
 ```{r}
 uniqueIds <- seq(1,873, length=873)
 id <- rep(uniqueIds, each=10)
-time_rang <- seq(0,1,length=10) # 10 time points
-basis <- eval.basis(time_rang, basisObj) # basis function evaluated at these time points
+time_rang <- seq(0,1,length=10)
+basis <- eval.basis(time_rang, basisObj)
 b1 <- rep(basis[,1], times = 873)
 b2 <- rep(basis[,2], times = 873)
 b3 <- rep(basis[,3], times = 873)
+b4 <- rep(basis[,4], times = 873)
+b5 <- rep(basis[,5], times = 873)
 
-y_pre <- rep(1, 8730) # dummy response values, will be updated 
-df_pre <- data.frame(id = id, y_pre = y_pre, b1 = b1, b2 = b2, b3 = b3)
+y_pre <- rep(0, 8730) # dummy response values, will be updated 
+df_pre <- data.frame(id = id, y_pre = y_pre, b1 = b1, b2 = b2, b3 = b3, b4 = b4, b5 = b5)
 
-### mixed-effect formula
-parsedFormula <- y_pre ~ (-1 + df_pre$b1 + df_pre$b2 + df_pre$b3 | df_pre$id) + 
-  (-1 + df_pre$b1 + df_pre$b2 + df_pre$b3 | df_pre$id)
+parsedFormula <- y_pre ~ (-1 + df_pre$b1 + df_pre$b2 + df_pre$b3 + df_pre$b4 + df_pre$b5 | df_pre$id) + 
+  (-1 + df_pre$b1 + df_pre$b2 + df_pre$b3 + df_pre$b4 + df_pre$b5 | df_pre$id)
 
-Z_pre <- t(lFormula(formula=parsedFormula, data=df_pre)$reTrms$Zt) ### random effect design matrix
+Z_pre <- t(lFormula(formula=parsedFormula, data=df_pre)$reTrms$Zt)
 
 ### update the genetic covariance matrix
 L <- as(t(chol(A)), "dgCMatrix")
-I3 <- as(diag(3), "dgCMatrix")
-M <- kronecker(L, I3)
-ZE <- Z_pre[,1:2619] 
-ZG <- Z_pre[,1:2619] %*% M 
-
-### random effects + residual
-df_pre$y_pre <- as.vector(ZG %*% alpha[1,] + ZE %*% gamma[1,] + res[1,]) # here just use the first simulated alpha and gamma
+I5 <- as(diag(5), "dgCMatrix")
+M <- kronecker(L, I5)
+ZE <- Z_pre[,1:4365] 
+ZG <- Z_pre[,1:4365] %*% M 
+df_pre$y_pre <- as.vector(ZG %*% alpha[1,] + ZE %*% gamma[1,] + res[1,]) # random effects + residual
 ```
 
 Step 4: Use `lm()` to calculate the fixed-effect. 
+
 ```{r}
-f <- lm(y_pre ~ -1 + df_pre$b1 + df_pre$b2 + df_pre$b3, data = df_pre)
-fix_ef <- f$coefficients[1] * df_pre$b1 + f$coefficients[2] * df_pre$b2 + f$coefficients[3] * df_pre$b3 ### fixed-effect 
+f <- lm(y_pre ~ -1 + df_pre$b1 + df_pre$b2 + df_pre$b3 + df_pre$b4 + df_pre$b5, data = df_pre)
+fix_ef <- f$coefficients[1] * df_pre$b1 + f$coefficients[2] * df_pre$b2 + f$coefficients[3] * df_pre$b3 +
+  f$coefficients[4] * df_pre$b4 + f$coefficients[5] + df_pre$b5
 ```
 
 Step 5: Generate response and reform into a dataframe for model-fitting.
+
 ```{r}
 response <- as.vector(fix_ef + df_pre$y_pre) 
 df_simu <- data.frame(id = id, response = response)
@@ -172,7 +190,7 @@ df_simu <- data.frame(id = id, response = response)
 
 ```{r echo=FALSE}
 y_list <- split(response, df_simu$id)
-plot(x=c(0,1), y = c(-200, 200), type="n", xlab="time", ylab = "response")
+plot(x=c(0,1), y=c(-300,300), type="n", xlab="time", ylab = "response")
 for (i in 1:873){
   lines(time_rang, y_list[[i]], type = "l", col = i)
 }
@@ -229,7 +247,7 @@ fit_genetic_fmm <- function(formula, data, A, phi)
 ## Fit simulated data
 ```{r}
 ## Data smoothing
-timefine <- seq(0,1,length=25) # slightly dense time grid
+timefine <- seq(0,1,length=25) # dense time grid
 y_hat <- matrix(0, 25, 873)
 lambda <- rep(0, 873)
 for (i in 1:873){
@@ -243,21 +261,24 @@ matplot(timefine, y_hat, col = 1:873, type= "l") ### smoothed curves
 
 ```{r}
 ## FPCA
-fpcaobj <- prcomp(x=t(y_hat), retx = TRUE, center = TRUE, rank. = 3)
+fpcaobj <- prcomp(x=t(y_hat), retx = TRUE, center = TRUE, rank. = 4)
 pcs <- fpcaobj$rotation # eigen vectors as basis functions for moedel-fitting
 
-pcs[,1] %*% pcs[,2]
-pcs[,1] %*% pcs[,3]
-pcs[,2] %*% pcs[,3]
+summary(pcs)
 
+pcs[,1] %*% pcs[,2]
+```
+
+```{r}
 ## Combine the smoothed data and basis functions to a dataframe
 subjectID <- rep(unique(df_simu$id), each=25)
 response_test <- c(y_hat)
 basis1 <- rep(pcs[,1], times = 873)
 basis2 <- rep(pcs[,2], times = 873)
 basis3 <- rep(pcs[,3], times = 873)
+basis4 <- rep(pcs[,4], times = 873)
 
-df_test <- data.frame(id = subjectID, y= response_test, phi1 = basis1, phi2 = basis2, phi3 = basis3) 
+df_test <- data.frame(id = subjectID, y= response_test, phi1 = basis1, phi2 = basis2, phi3 = basis3, phi4 = basis4) 
 
 ## Fit FMEM
 fform <- y ~ -1 + df_test$phi1 + df_test$phi2 + df_test$phi3 + 
@@ -265,7 +286,7 @@ fform <- y ~ -1 + df_test$phi1 + df_test$phi2 + df_test$phi3 +
   (-1 + df_test$phi1 + df_test$phi2 + df_test$phi3 | df_test$id)
 
 system.time(
- ft <-  fit_genetic_fmm(fform, df_test, A, pcs)
+ ft <-  fit_genetic_fmm(fform, df_test, A, pcs[,1:3])
 ) # user   system   elapsed
 
 summary(ft)
@@ -279,113 +300,106 @@ CE <- vc[["df_test.id.1"]] ## environmental covariance
 
 
 ### Convert to genetic covariance function
-CG_fun <- pcs %*% CG %*% t(pcs)
+CG_fun <- pcs[,1:3] %*% CG %*% t(pcs[,1:3])
 ### environmental covariance function
-CE_fun <- pcs %*% CE %*% t(pcs)
+CE_fun <- pcs[,1:3] %*% CE %*% t(pcs[,1:3])
 ### Phenotypic covariance function
 P_fun <- CG_fun + CE_fun
+```
 
-# Plot the genetic covariance function
-fig_RR1 <- plot_ly(x = timefine, y = timefine, z = ~CG_fun, 
-                   type = "surface", showscale = FALSE) %>% 
-  layout(title = "Genetic Variance Function", 
-         scene = list(zaxis = list(title=""),
-                      xaxis = list(title = "time"),
-                      yaxis = list(title = "time")))
+```{r warning=FALSE, message=FALSE, echo=FALSE, out.width="150%"}
+fig1 <- plot_ly(x = timefine, y = timefine, z = ~CG_fun, scene='scene1') 
+fig1 <- fig1 %>% add_surface(showscale=FALSE)
 
-# Plot the environmental covariance function
-fig_RR2 <- plot_ly(x = timefine, y = timefine, z = ~CE_fun, 
-                   type = "surface", showscale = FALSE) %>% 
-  layout(title = "Environment Variance Function", 
-         scene = list(zaxis = list(title=""),
-                      xaxis = list(title = "time"),
-                      yaxis = list(title = "time")))
+fig2 <- plot_ly(x = timefine, y = timefine,z = ~CE_fun, scene='scene2') 
+fig2 <- fig2 %>% add_surface(showscale=FALSE)
 
-# Plot the phenotypic covariance function
-fig_RR3 <- plot_ly(x = timefine, y = timefine, z = ~P_fun, 
-                   type = "surface", showscale = FALSE) %>% 
-  layout(title = "Phenotypic Variance Function", 
-         scene = list(zaxis = list(title=""),
-                      xaxis = list(title = "time"),
-                      yaxis = list(title = "time")))
+fig3 <- plot_ly(x = timefine, y = timefine,z = ~P_fun, scene='scene3') 
+fig3 <- fig3 %>% add_surface(showscale=FALSE)
 
-# Display each plot separately
+
+# subplot and define scene
+fig_RR1 <- subplot(fig1, fig2, fig3) 
+fig_RR1 <- fig_RR1 %>% layout(title = "Covariance Plot",
+                      scene = list(domain=list(x=c(0,0.32),y=c(0.25,1)),
+                                   xaxis=list(title = "time"),
+                                   yaxis =list(title = "time") , 
+                                   zaxis=list(title = "Gen"),
+                                   aspectmode='cube'),
+                      scene2 = list(domain=list(x=c(0.34,0.66),y=c(0.25,1)),
+                                    xaxis=list(title = "time"),
+                                    yaxis =list(title = "time"),
+                                    zaxis=list(title = "Env"),
+                                    aspectmode='cube'),
+                      scene3 = list(domain=list(x=c(0.68,1),y=c(0.25,1)),
+                                    xaxis=list(title = "time"),
+                                    yaxis =list(title = "time"),
+                                    zaxis=list(title = "Phe"),
+                                    aspectmode='cube'))
 
 fig_RR1
-fig_RR2
-fig_RR3
-
 ```
 
 ### Covariance estimation when 4 PCs used as basis functions
-```{r include=FALSE}
-## FPCA
-fpcaobj <- prcomp(x=t(y_hat), retx = TRUE, center = TRUE, rank. = 4) # use 4 PCs as basis
-pcs <- fpcaobj$rotation # eigen vectors as basis functions for moedel-fitting
 
-## Combine the smoothed data and basis functions to a dataframe
-subjectID <- rep(unique(df_simu$id), each=25)
-response_test <- c(y_hat)
-basis1 <- rep(pcs[,1], times = 873)
-basis2 <- rep(pcs[,2], times = 873)
-basis3 <- rep(pcs[,3], times = 873)
-basis4 <- rep(pcs[,4], times = 873)
-
-df_test <- data.frame(id = subjectID, y= response_test, phi1 = basis1, phi2 = basis2, phi3 = basis3, phi4 = basis4) 
-
+```{r}
 ## Fit FMEM
-fform <- y ~ -1 + df_test$phi1 + df_test$phi2 + df_test$phi3 + df_test$phi4 + 
+fform1 <- y ~ -1 + df_test$phi1 + df_test$phi2 + df_test$phi3 + df_test$phi4 + 
   (-1 + df_test$phi1 + df_test$phi2 + df_test$phi3 + df_test$phi4 | df_test$id) + 
   (-1 + df_test$phi1 + df_test$phi2 + df_test$phi3 + df_test$phi4 | df_test$id)
 
 system.time(
- ft <-  fit_genetic_fmm(fform, df_test, A, pcs)
+ ft1 <-  fit_genetic_fmm(fform1, df_test, A, pcs)
 ) # user   system   elapsed
 
-summary(ft)
+summary(ft1)
 ```
 
-```{r echo=FALSE}
+```{r}
 # Extract covariance function
-vc <- VarCorr(ft)
-CG <- vc[["df_test.id"]] ## genetic covariance
-CE <- vc[["df_test.id.1"]] ## environmental covariance
+vc1 <- VarCorr(ft1)
+CG1 <- vc1[["df_test.id"]] ## genetic covariance
+CE1 <- vc1[["df_test.id.1"]] ## environmental covariance
 
 
 ### Convert to genetic covariance function
-CG_fun <- pcs %*% CG %*% t(pcs)
+CG_fun1 <- pcs %*% CG1 %*% t(pcs)
 ### environmental covariance function
-CE_fun <- pcs %*% CE %*% t(pcs)
+CE_fun1 <- pcs %*% CE1 %*% t(pcs)
 ### Phenotypic covariance function
-P_fun <- CG_fun + CE_fun
+P_fun1 <- CG_fun1 + CE_fun1
+```
 
-# Plot the genetic covariance function
-fig_RR1 <- plot_ly(x = timefine, y = timefine, z = ~CG_fun, 
-                   type = "surface", showscale = FALSE) %>% 
-  layout(title = "Genetic Variance Function", 
-         scene = list(zaxis = list(title=""),
-                      xaxis = list(title = "time"),
-                      yaxis = list(title = "time")))
+```{r warning=FALSE, message=FALSE, echo=FALSE, out.width="150%"}
+# individual plots
+fig4 <- plot_ly(x = timefine, y = timefine, z = ~CG_fun1, scene='scene1') 
+fig4 <- fig4 %>% add_surface(showscale=FALSE)
 
-# Plot the environmental covariance function
-fig_RR2 <- plot_ly(x = timefine, y = timefine, z = ~CE_fun, 
-                   type = "surface", showscale = FALSE) %>% 
-  layout(title = "Environment Variance Function", 
-         scene = list(zaxis = list(title=""),
-                      xaxis = list(title = "time"),
-                      yaxis = list(title = "time")))
+fig5 <- plot_ly(x = timefine, y = timefine,z = ~CE_fun1, scene='scene2') 
+fig5 <- fig5 %>% add_surface(showscale=FALSE)
 
-# Plot the phenotypic covariance function
-fig_RR3 <- plot_ly(x = timefine, y = timefine, z = ~P_fun, 
-                   type = "surface", showscale = FALSE) %>% 
-  layout(title = "Phenotypic Variance Function", 
-         scene = list(zaxis = list(title=""),
-                      xaxis = list(title = "time"),
-                      yaxis = list(title = "time")))
+fig6 <- plot_ly(x = timefine, y = timefine,z = ~P_fun1, scene='scene3') 
+fig6 <- fig6 %>% add_surface(showscale=FALSE)
 
-# Display each plot separately
 
-fig_RR1
+# subplot and define scene
+fig_RR2 <- subplot(fig4, fig5, fig6) 
+fig_RR2 <- fig_RR2 %>% layout(title = "Covariance Plot",
+                      scene = list(domain=list(x=c(0,0.32),y=c(0.25,1)),
+                                   xaxis=list(title = "time"),
+                                   yaxis =list(title = "time"),
+                                   zaxis=list(title = "Gen"),
+                                   aspectmode='cube'),
+                      scene2 = list(domain=list(x=c(0.34,0.66),y=c(0.25,1)),
+                                    xaxis=list(title = "time"),
+                                    yaxis =list(title = "time"), 
+                                    zaxis=list(title = "Env"),
+                                    aspectmode='cube'),
+                      scene3 = list(domain=list(x=c(0.68,1),y=c(0.25,1)),
+                                    xaxis=list(title = "time"),
+                                    yaxis =list(title = "time"), 
+                                    zaxis=list(title = "Phe"),
+                                    aspectmode='cube'))
+
 fig_RR2
-fig_RR3
 ```
