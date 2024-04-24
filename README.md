@@ -19,7 +19,7 @@ The pdf file `FMEMs in Quantitative Genetics` contains an overview of this resea
 - `Smoothing_Revisited_Model_Fitting.Rmd`: Here we examine two smoothing methods: 1. smooth the data on the original scale; 2. smooth the data on a logarithmic scale (imposing positive smoothing) and we also check the smoothing parameter $\lambda_i$ selected by GCV. We found that the irregular sampling points lead to two problems: for subjects with fewer measurements, GCV will select very large $\lambda$, and fitted curves approach to standard linear regression to the data; for subjects with more sparse measurements around the starting period, the fitted curves have negative values near $t=0$.
 - `Model_fitting_efficiency.Rmd`: We compare three ways to fit data to the genetic model: 1. fit raw data; 2. fit smoothed data on the original time points; 3. fit smoothed data on the dense grid (computationally inefficient).
 
- *April 23rd*
+  *April 23rd*:
  - `Simulation.Rmd`
 ### R package help documents
 - `fdasrvf`: perform alignment, PCA, and modelling of multidimensional and unidimensional functions using the square-root velocity framework.
