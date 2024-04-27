@@ -1,0 +1,568 @@
+---
+title: "Simulation"
+output: html_document
+date: "2024-04-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+fit_genetic_fmm <- function(formula, data, A, phi)
+  {
+  #'This function uses the lme4 package to fit a linear mixed-effect model to genetic data, 
+  #'with a specified additive genetic relationship matrix A.
+  #'In this particular format, we fit both fixed effects and random effects using the same
+  #'basis functions (principal components obtained from running FPCA).
+  #'
+  #'@param fromula a two-sided linear formula object describing both the fixed-effects
+  #'and random-effects of the model (as the same form used in lmer).
+  #'@param data an data frame containing the variables named in formula.
+  #'@param A a sparse matrix: an additive genetic relationship matrix 
+  #'which models the genetic relationship in the dataset.
+  #'@param phi functional basis: a matrix where each column represents a basis element.
+  #'@return returns a fitted mixed-effect model
+  
+  # Random effect parameterisation
+  require(lme4)
+  require(Matrix)
+  
+  L <- as(t(chol(A)), "dgCMatrix") # cholesky decomposition of A
+  p <- dim(phi)[2] # number of elements of the functional basis
+  I_p <- as(diag(p), "dgCMatrix")
+  M <- kronecker(L, I_p) # used to update the genetic design matrix Z_E = ZM
+  
+  # Fit mixed-effect model
+  
+  ## define the mixed-model formula
+  fmmParsedForm <- lFormula(formula, data=data)
+  
+  ### Compute the random-effect matrix
+  Z_pre <- t(fmmParsedForm$reTrms$Zt)
+  ZE <- Z_pre[,1:dim(M)[1]] # environmental random-effect matrix
+  ZG <- Z_pre[,1:dim(M)[1]] %*% M # update the genetic-random effect matrix
+  Z <- cbind(ZG, ZE) # the updated random effect design matrix
+  
+  ### Modularisation
+  fmmParsedForm$reTrms$Zt <- t(Z) # Update Z in the reTrms term
+  fmmDevFun <- do.call(mkLmerDevfun,fmmParsedForm) # update the objective function
+  fmmOpitimize <- optimizeLmer(devfun=fmmDevFun)# update the optimisation module
+  
+  ### returns the mixed-effect model
+  fmm <- mkMerMod(rho=environment(fmmDevFun),opt=fmmOpitimize, reTrms=fmmParsedForm$reTrms, fr=fmmParsedForm$fr)
+
+  return(fmm)
+}
+```
+
+```{r include=FALSE}
+convert_to_basisfunctions <- function(t, eigenvecs, tout) 
+  {
+  #'This function converts an eigenvector to an eigenfunction using interpolation.
+  #'
+  #'@param t a numeric vector containing the fine time grid points used to compute the principal components.
+  #'@param eigenvecs vector or matrix of eigenvectors obtained from FPCA.
+  #'@param tout an optional set of numeric values specifying where interpolation is to take place.
+  #'@return matrix where each column represents an eigenfunction of time.
+  
+  
+  # Initialize an empty matrix to store eigenfunctions
+  
+  if (is.vector(eigenvecs) == TRUE){
+    for (i in 1: length(eigenvecs)){
+        eigen_functions <- approx(x = t, y = eigenvecs, xout = tout)$y
+    }
+  }
+  
+  else{
+    eigen_functions <- matrix(0, nrow = length(tout), ncol = ncol(eigenvecs))
+    
+    for (i in 1:ncol(eigenvecs)) {
+      eigen_functions[,i] <- approx(x = t, y = eigenvecs[,i], xout = tout)$y
+    }
+  }
+  # Interpolate eigenvectors to the original time points
+    
+  return(eigen_functions)
+
+}
+```
+
+```{r include=FALSE}
+library(Matrix)
+library(MASS)
+library(fda)
+library(lme4)
+library(pedigreemm)
+library(mvnfast)
+library(ggplot2)
+library(plotly)
+library(fBasics)
+library(latex2exp)
+```
+
+## Functional Mixed-Effect Model
+
+\begin{align*}
+\bf{Y} &= \bf{X \beta} + \bf{Z^G \alpha} + \bf{Z^E \gamma} + \bf{\epsilon}\\
+&= \bf{X \beta} + \bf{Z u} + \bf{\epsilon}
+\end{align*} where $\bf{Z} = [\bf{Z^G}, \bf{Z^E}]$, $\bf{u} = [\bf{\alpha}, \bf{\beta}]^T$ with the following distribution of the random vectors: \begin{align*}
+\alpha &\sim N(\bf{0}, \bf{A \otimes C^G})\\
+\gamma &\sim N(\bf{0}, \bf{I_N \otimes C^E})\\
+\epsilon & \sim N(\bf{0}, \sigma^2_{res} *\bf{I_n})
+\end{align*} assuming there are $N$ individuals and total $n$ measurements.
+
+For the simulation study, we will fix a basis $\phi(t)$ for our functional space and true covariance matrices $\bf{C^G}$ and $\bf{C^E}$. Therefore the true genetic and environmental covariance functions which will be estimated are: \begin{align*}
+G(t,s) & = \phi(t)^T \ast \bf{C^G} \ast \phi(t)\\
+E(t,s) & = \phi(t)^T \ast \bf{C^E} \ast \phi(t)
+\end{align*} Then we will generate a set of responses and fit the mixed-effect model to get the estimated covariance functions $\hat{G}(t,s)$ and $\hat{E}(t,s)$, which then will be compared with the true ones.
+
+## Simulation process
+
+Step 1: Use 5 cubic B-splines as model basis. Fix equal covariance for both genetic and environmental effects.
+
+Remark: Later we will use principal components as basis to fit the mixed-effect model. Here we assume the number of basis to construct the covariance functions is larger than the number of principal components to re-construct the covariance.
+
+```{r}
+set.seed(123)
+
+### use b-spline basis
+basisObj <- create.bspline.basis(c(0,1), nbasis = 5, norder = 4)
+### genetic covariance matrix
+C_gen <- matrix(c(750, 10 ,130, 80, 250,
+              10, 800, 30, 15, 40,
+              130, 30, 700, 50, 130,
+              80, 15, 50, 420, 50,
+              250, 40, 130, 50, 330), nrow = 5, byrow = T)
+### environmental covariance matrix
+C_env <- matrix(c(750, 10 ,130, 80, 250,
+              10, 800, 30, 15, 40,
+              130, 30, 700, 50, 130,
+              80, 15, 50, 420, 50,
+              250, 40, 130, 50, 330), nrow = 5, byrow = T)
+### residual variance
+sigma2 <- 50
+```
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, out.width="120%"}
+## Plot the true covariances functions
+time_rang <- seq(0,1,length=10)
+basis <- eval.basis(time_rang, basisObj) 
+C_gen_fun <- basis %*% C_gen %*% t(basis)
+C_env_fun <- basis %*% C_env %*% t(basis)
+P_true <- C_gen_fun + C_env_fun
+
+trace_ratio_true <- tr(C_gen_fun) / tr(C_env_fun)
+
+sim1 <- plot_ly(x = time_rang, y = time_rang, z = ~C_gen_fun, scene='scene1') 
+sim1 <- sim1 %>% add_surface(showscale=FALSE)
+
+sim2 <- plot_ly(x = time_rang, y = time_rang,z = ~C_env_fun, scene='scene2') 
+sim2 <- sim2 %>% add_surface(showscale=FALSE)
+
+fig1 <- subplot(sim1, sim2) 
+fig1 <- fig1 %>% layout(title = "Covariance Plot",
+                              scene = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
+                                           xaxis=list(title = "time"),
+                                           yaxis =list(title = "time"),
+                                           zaxis=list(range=c(-10,800),
+                                                      title = "Gen"),
+                                           aspectmode='cube'),
+                              scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
+                                            xaxis=list(title = "time"),
+                                            yaxis =list(title = "time"), 
+                                            zaxis=list(range=c(-10,800),
+                                                       title = "Env"),
+                                            aspectmode='cube'))
+
+fig1
+```
+
+Step 2: Set the distribution of the random effect vectors $\bf{\alpha}$ and $\bf{\gamma}$.
+
+Remark: we will assume there are 873 individuals so the same genetic relationship matrix $A$ computed from the actual data set will be used in our simulation study. For now, assume each individual has 10 regular sampling points from the unit interval. We will use 3 (and 4) principal components to re-construct the covariance functions (so we see how the number of principal components affects model result).
+
+```{r include =FALSE}
+### Calculate the genetic relationship matrix A (use the TC dataset)
+setwd("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code")
+TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
+names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
+df <- data.frame(TRFUN25PUP4)
+
+FirstUniqueIdPos <- which(duplicated(df$id) == FALSE)
+N = length(FirstUniqueIdPos) # N = 873 subjects
+n = 8730 # each individual have 10 observations, in total 8730
+
+pos = df$id[FirstUniqueIdPos] # extract ids for all subjects
+sire_id = df$sire[FirstUniqueIdPos] # extract ids for sire
+dam_id = df$dam[FirstUniqueIdPos] # extract ids for dam
+
+pede <- editPed(sire = sire_id, dam = dam_id, label = pos)
+ped<- with(pede, pedigree(label=label, sire=sire, dam=dam))
+A <- getA(ped)[163:1035,163:1035]
+```
+
+```{r}
+### reparameterised genetic covariance 
+C_gen_para <- as(kronecker(A, C_gen), "dgCMatrix") 
+
+### reparameterised environmental covariance 
+I_N <- as(diag(873), "dgCMatrix")
+C_env_para <- as(kronecker(I_N, C_env), "dgCMatrix")
+
+
+### distribution of the random vectors 
+mu <- rep(0, dim(C_gen_para)[1])
+alpha <- rmvn(n=50, mu, C_gen_para) # generated 50 repsonses
+gamma <- rmvn(n=50, mu, C_env_para)
+
+### distribution of the error vector
+mu_res <- rep(0, 8730)
+I_n <- as(diag(8730), "dgCMatrix")
+res_cov <- as(sigma2 * I_n, "dgCMatrix") 
+  
+res <- rmvn(n=50, mu=mu_res, sigma = res_cov) # error vector
+```
+
+Step 3: Generate curve data.
+
+Each subject's curve data is influenced by a combination of random effects across the basis functions plus the measurement errors. Here we manually map random effects back to the individual level, considering the Kronecker product structure used in generating $\bf{\alpha}$ and $\bf{\beta}$.
+
+```{r}
+rand_eff <- matrix(0, n, 50) # matrix where each column contains the random effects of one simulated sample
+errors <- matrix(0, n, 50) # matrix where each column contains the residual of one simulated sample
+for (j in 1:50){
+  rand_vec <- numeric(0)
+  for (i in seq(1,length(alpha[j,]), by = 5)){
+    rand <- basis %*% alpha[j,i:(i+4)] + basis %*% gamma[j,i:(i+4)]
+    rand_vec <- c(rand_vec, rand)
+  }
+  rand_eff[,j] <- rand_vec 
+}
+
+for (j in 1:50){
+  err_vec <- numeric(0)
+  for (k in seq(1, length(res[j,]), by = 10)){
+    err <- res[j,k:(k+9)]
+    err_vec <- c(err_vec, err)
+  }
+  errors[,j] <- err_vec
+}
+
+Y <- rand_eff + errors # matrix where each column contains the simulated data of one sample
+```
+
+```{r echo=FALSE}
+uniqueIds <- seq(1,873, length=873)
+id <- rep(uniqueIds, each=10)
+y_list <- split(Y[,1], id)
+plot(x=c(0,1), y=c(-150,150), type="n", xlab="time", ylab = "response")
+for (i in 1:873){
+  lines(time_rang, y_list[[i]], type = "l", col = i)
+}
+```
+
+## Fit simulated data
+
+```{r}
+## Data smoothing
+timefine <- seq(0,1,length=100) # dense time grid
+y_hat <- matrix(0, 100, 873)
+
+for (i in 1:873){
+  ss <- smooth.spline(time_rang, y_list[[i]], cv = FALSE)
+  y_hat[,i] <- predict(ss, timefine)$y
+}
+
+matplot(timefine, y_hat, col = 1:873, type= "l") ### smoothed curves
+```
+
+```{r}
+## FPCA
+### fit smoothed data at original time measurement points
+trait <- convert_to_basisfunctions(t = timefine, eigenvecs = y_hat,
+                                 tout = time_rang)
+
+fpcaobj <- prcomp(x=t(trait), retx = TRUE, center = TRUE, rank. = 4)
+pcs <- fpcaobj$rotation # eigen vectors as basis functions for moedel-fitting
+
+pcs[,1] %*% pcs[,2]
+```
+
+```{r}
+## Combine the smoothed data and basis functions to a dataframe
+response_test <- c(trait)
+basis1 <- rep(pcs[,1], times = 873)
+basis2 <- rep(pcs[,2], times = 873)
+basis3 <- rep(pcs[,3], times = 873)
+basis4 <- rep(pcs[,4], times = 873)
+
+df_test <- data.frame(id = id, y= response_test, phi1 = basis1, phi2 = basis2, phi3 = basis3, phi4 = basis4) 
+
+## Fit FMEM
+fform <- y ~ 1 + df_test$phi1 + df_test$phi2 + df_test$phi3 + 
+  (-1 + df_test$phi1 + df_test$phi2 + df_test$phi3 | df_test$id) + 
+  (-1 + df_test$phi1 + df_test$phi2 + df_test$phi3 | df_test$id)
+
+system.time(
+ ft <-  fit_genetic_fmm(fform, df_test, A, pcs[,1:3])
+) # user   system   elapsed
+
+summary(ft)
+```
+
+```{r}
+# Extract covariance function
+vc <- VarCorr(ft)
+CG <- vc[["df_test.id"]] ## genetic covariance
+CE <- vc[["df_test.id.1"]] ## environmental covariance
+
+
+### Convert to genetic covariance function
+CG_fun <- pcs[,1:3] %*% CG %*% t(pcs[,1:3])
+### environmental covariance function
+CE_fun <- pcs[,1:3] %*% CE %*% t(pcs[,1:3])
+### Phenotypic covariance function
+P_fun <- CG_fun + CE_fun
+
+### Error
+gen_err1 <- norm((C_gen_fun - CG_fun), type = "F")
+paste("Genetic error:",gen_err1)
+env_err1 <- norm((C_env_fun - CE_fun), type = "F")
+paste("Environment error:",env_err1)
+```
+
+```{r warning=FALSE, message=FALSE, echo=FALSE,out.width="120%"}
+fig1 <- plot_ly(x = timefine, y = timefine, z = ~CG_fun, scene='scene1') 
+fig1 <- fig1 %>% add_surface(showscale=FALSE)
+
+fig2 <- plot_ly(x = timefine, y = timefine,z = ~CE_fun, scene='scene2') 
+fig2 <- fig2 %>% add_surface(showscale=FALSE)
+
+fig_RR1 <- subplot(fig1, fig2) 
+fig_RR1 <- fig_RR1 %>% layout(title = "Covariance Plot",
+                      scene = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
+                                   xaxis=list(title = "time"),
+                                   yaxis =list(title = "time") , 
+                                   zaxis=list(range=c(-10,900),title = "Gen"),
+                                   aspectmode='cube'),
+                      scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
+                                    xaxis=list(title = "time"),
+                                    yaxis =list(title = "time"),
+                                    zaxis=list(range=c(-10,900),title = "Env"),
+                                    aspectmode='cube'))
+
+fig_RR1
+```
+
+So far we only test our model on one simulated response. Let us repeat the process on the rest simulated data and measure the total errors (measured by Frobenius norm) on genetic and environmental covariance function for each simulation.
+
+```{r eval=FALSE}
+time_rang <- seq(0,1,length=10)
+timefine <- seq(0,1,length=100) # dense time grid
+uniqueIds <- seq(1,873, length=873)
+id <- rep(uniqueIds, each=10)
+y_hat <- matrix(0, 100, 873)
+gen_err3 <- rep(0, 50) ## store the error on genetic covariance in Frobenius norm
+env_err3 <- rep(0, 50) ## store the error on environmental covariance in Frobenius norm
+tr_gen3 <- rep(0,50) ## store the trace of genetic covariance function
+tr_env3 <- rep(0,50) ## store the trace of environmental covariance function
+```
+
+```{r eval=FALSE}
+system.time(
+for (j in 41:50){
+  ### data smoothing
+  Y_list <- split(Y[,j], id)
+  for (i in 1:873){
+    ss <- smooth.spline(time_rang, Y_list[[i]], cv = FALSE)
+    y_hat[,i] <- predict(ss, timefine)$y
+  }
+  
+  ### fit smoothed data at original time measurement points
+  y <- convert_to_basisfunctions(t = timefine, eigenvecs = y_hat,
+                                 tout = time_rang)
+  
+  ### FPCA
+  fpcaobj <- prcomp(x=t(y), retx = TRUE, center = TRUE, rank. = 3)
+  pcs <- fpcaobj$rotation
+  
+  ## Combine the smoothed data and basis functions to a dataframe
+  response_test <- c(y)
+  basis1 <- rep(pcs[,1], times = 873)
+  basis2 <- rep(pcs[,2], times = 873)
+  basis3 <- rep(pcs[,3], times = 873)
+  
+  df_test <- data.frame(id = id, y= response_test, phi1 = basis1, 
+                        phi2 = basis2, phi3 = basis3) 
+  
+  ### Fit FMEM
+  fform <- y ~ 1 + df_test$phi1 + df_test$phi2 + df_test$phi3 + 
+    (-1 + df_test$phi1 + df_test$phi2 + df_test$phi3 | df_test$id) + 
+    (-1 + df_test$phi1 + df_test$phi2 + df_test$phi3 | df_test$id)
+  
+  ft <-  fit_genetic_fmm(fform, df_test, A, pcs)
+  
+  ### Estimated covariance
+  vc <- VarCorr(ft)
+  CG <- vc[["df_test.id"]] # genetic covariance
+  CE <- vc[["df_test.id.1"]] # environmental covariance
+  
+  CG_fun <- pcs %*% CG %*% t(pcs) # estimated gen cov function
+  CE_fun <- pcs %*% CE %*% t(pcs) # estimated env cov function
+  
+  tr_gen3[j] <- tr(CG_fun)
+  tr_env3[j] <- tr(CE_fun)
+  
+  ### Error on genetic and environmental covariance
+  gen_err3[j] <- norm((C_gen_fun - CG_fun), type = "F")
+  env_err3[j] <- norm((C_env_fun - CE_fun), type = "F")
+}
+)
+```
+
+```{r eval=FALSE}
+save(tr_gen3,file = "tr_gen3.Rdata")
+save(tr_env3,file = "tr_env3.Rdata")
+save(gen_err3,file = "gen_err3.Rdata")
+save(env_err3,file = "env_err3.Rdata")
+```
+
+```{r include=FALSE}
+load("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code/Simulation_results_50groups/tr_env3.Rdata")
+load("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code/Simulation_results_50groups/tr_gen3.Rdata")
+load("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code/Simulation_results_50groups/env_err3.Rdata")
+load("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code/Simulation_results_50groups/gen_err3.Rdata")
+```
+
+```{r echo=FALSE}
+par(mfrow = c(1,1))
+errors_list <- list(gen_err3, env_err3)
+
+# Generate the boxplot
+boxplot(errors_list,
+        xlab = "",
+        ylab = "Error",
+        col = c("blue", "green"),
+        names = c("Genetic", "Environmental"),
+        main = "Errors when using 3 PCs")
+```
+
+```{r echo=FALSE}
+plot(c(1,50), c(0.5,2.5),type="n", xlab="", ylab = TeX(r'(${tr(gen)/tr(env)}$)'), main = "Trace ratio when using 3 PCs")
+x_axis <- seq(1,50,by=1)
+for (j in 1:50){
+  lines(x_axis[j],(tr_gen3[j]/tr_env3[j]), type = "p")
+}
+abline(h=1,col="blue")
+
+paste("average trace ratio:",sum((tr_gen3/tr_env3))/50)
+```
+
+### Simulation using 4 PCs
+
+```{r eval = FALSE}
+time_rang <- seq(0,1,length=10)
+timefine <- seq(0,1,length=100) # dense time grid
+uniqueIds <- seq(1,873, length=873)
+id <- rep(uniqueIds, each=10)
+y_hat <- matrix(0, 100, 873)
+gen_err4 <- rep(0, 50) ## store the error on genetic covariance in Frobenius norm
+env_err4 <- rep(0, 50) ## store the error on environmental covariance in Frobenius norm
+
+tr_gen4 <- rep(0,50) ## store the trace of genetic covariance function
+tr_env4 <- rep(0,50) ## store the trace of environmental covariance function
+
+```
+
+```{r eval = FALSE}
+system.time(
+for (j in 1:5){
+  ### data smoothing
+  Y_list <- split(Y[,j], id)
+  for (i in 1:873){
+    ss <- smooth.spline(time_rang, Y_list[[i]], cv = FALSE)
+    y_hat[,i] <- predict(ss, timefine)$y
+  }
+  
+  ### fit smoothed data at original time measurement points
+  y <- convert_to_basisfunctions(t = timefine, eigenvecs = y_hat,
+                                 tout = time_rang)
+  
+  ### FPCA
+  fpcaobj <- prcomp(x=t(y), retx = TRUE, center = TRUE, rank. = 4)
+  pcs <- fpcaobj$rotation
+  
+  ## Combine the smoothed data and basis functions to a dataframe
+  response_test <- c(y)
+  basis1 <- rep(pcs[,1], times = 873)
+  basis2 <- rep(pcs[,2], times = 873)
+  basis3 <- rep(pcs[,3], times = 873)
+  basis4 <- rep(pcs[,4], times = 873)
+  
+  df_test <- data.frame(id = id, y= response_test, phi1 = basis1, 
+                        phi2 = basis2, phi3 = basis3, phi4 = basis4) 
+  
+  ### Fit FMEM
+  fform <- y ~ 1 + df_test$phi1 + df_test$phi2 + df_test$phi3 + df_test$phi4 +
+    (-1 + df_test$phi1 + df_test$phi2 + df_test$phi3 + df_test$phi4 | df_test$id) + 
+    (-1 + df_test$phi1 + df_test$phi2 + df_test$phi3 + df_test$phi4 | df_test$id)
+  
+  ft <-  fit_genetic_fmm(fform, df_test, A, pcs)
+  
+  ### Estimated covariance
+  vc <- VarCorr(ft)
+  CG <- vc[["df_test.id"]] # genetic covariance
+  CE <- vc[["df_test.id.1"]] # environmental covariance
+  
+  CG_fun <- pcs %*% CG %*% t(pcs) # estimated gen cov function
+  CE_fun <- pcs %*% CE %*% t(pcs) # estimated env cov function
+  
+  tr_gen4[j] <- tr(CG_fun)
+  tr_env4[j] <- tr(CE_fun)
+  
+  ### Error on genetic and environmental covariance
+  gen_err4[j] <- norm((C_gen_fun - CG_fun), type = "F")
+  env_err4[j] <- norm((C_env_fun - CE_fun), type = "F")
+}
+)
+```
+
+```{r eval=FALSE}
+save(tr_gen4,file = "tr_gen4.Rdata")
+save(tr_env4,file = "tr_env4.Rdata")
+save(gen_err4,file = "gen_err4.Rdata")
+save(env_err4,file = "env_err4.Rdata")
+```
+
+```{r include=FALSE}
+load("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code/Simulation_results_50groups/tr_env4.Rdata")
+load("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code/Simulation_results_50groups/tr_gen4.Rdata")
+load("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code/Simulation_results_50groups/env_err4.Rdata")
+load("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code/Simulation_results_50groups/gen_err4.Rdata")
+```
+
+```{r echo=FALSE}
+par(mfrow = c(1,1))
+errors_list <- list(gen_err4, env_err4)
+
+# Generate the boxplot
+boxplot(errors_list,
+        xlab = "",
+        ylab = "Error",
+        col = c("blue", "green"),
+        names = c("Genetic", "Environmental"),
+        main = "Errors when using 4 PCs")
+```
+
+```{r echo=FALSE}
+plot(c(1,50), c(0.5,2.5),type="n", xlab="", ylab = TeX(r'(${tr(gen)/tr(env)}$)'), main = "Trace ratio when using 4 PCs")
+x_axis <- seq(1,50,by=1)
+for (j in 1:50){
+  lines(x_axis[j],(tr_gen4[j]/tr_env4[j]), type = "p")
+}
+abline(h=1,col="blue")
+
+paste("average trace ratio:",sum((tr_gen4/tr_env4))/50)
+```
