@@ -372,7 +372,7 @@ tr_env3 <- rep(0,50) ## store the trace of environmental covariance function
 
 ```{r eval=FALSE}
 system.time(
-for (j in 41:50){
+for (j in 1:50){
   ### data smoothing
   Y_list <- split(Y[,j], id)
   for (i in 1:873){
@@ -478,7 +478,7 @@ tr_env4 <- rep(0,50) ## store the trace of environmental covariance function
 
 ```{r eval = FALSE}
 system.time(
-for (j in 1:5){
+for (j in 1:50){
   ### data smoothing
   Y_list <- split(Y[,j], id)
   for (i in 1:873){
