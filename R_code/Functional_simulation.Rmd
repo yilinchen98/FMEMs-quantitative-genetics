@@ -104,7 +104,7 @@ convert_to_basisfunctions <- function(t, eigenvecs, tout)
 
 ```{r include =FALSE}
 ### Calculate the genetic relationship matrix A (use the TC dataset)
-setwd("D:/KCL_2023-2027_PhD/Genetics_FMEM_Project/FMEMs-quantitative-genetics/R_code")
+#setwd("D:/KCL_2023-2027_PhD/Genetics_FMEM_Project/FMEMs-quantitative-genetics/R_code")
 TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4)
