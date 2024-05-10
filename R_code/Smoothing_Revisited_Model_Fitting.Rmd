@@ -1,0 +1,405 @@
+---
+title: "Smoothing Revisted and Model Fitting"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Import library
+
+```{r warning = FALSE, message = FALSE}
+library(Matrix)
+library(fdasrvf)
+library(lme4)
+library(pedigreemm)
+library(ggplot2)
+library(plotly)
+```
+
+## Import data and rescale time to unit interval.
+
+```{r}
+setwd("D:/KCL_2023-2027_PhD/Year 1/Genetics/FMEMs-quantitative-genetics/R_code")
+TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
+names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
+df <- data.frame(TRFUN25PUP4)
+
+FirstUniqueIdPos <- which(duplicated(df$id) == FALSE)
+N = length(FirstUniqueIdPos) # N = 873 subjects
+n = length(df$id) # n = 6860 observations
+age_list <- split(df$x,df$id)
+trait_list <- split(df$trait,df$id)
+
+age_list_new <- list()
+for (i in 1:N){
+  age_list_new[[i]] = (age_list[[i]]-min(age_list[[i]]))/(max(age_list[[i]])-min(age_list[[i]]))
+}
+
+df$x_rescaled <- unsplit(age_list_new,df$id)
+```
+
+## Plot the raw data
+
+```{r}
+par(mfrow=c(1,2))
+plot(c(0,25), c(0,400), xlab="Time", ylab="Mass", main="Growth Plot", type="n")
+for (i in 1:N){
+  lines(age_list[[i]], trait_list[[i]],type="l", col=i)
+}
+
+plot(c(0,25), c(0,6), type = 'n',xlab = 'Time', 
+     ylab = 'Mass', main = 'Log Growth Plot ')
+for (i in 1:N) {
+  lines(age_list[[i]], log(trait_list[[i]]), col = i)
+}
+```
+
+# Data smoothing
+
+Use penalised smoothing spline as basis functions. Here we take two ways to smooth the data. First, smooth body mass on its original. Second, smooth growth curves on the logarithmic scale and then take exponential to recover body mass. This imposes positive smoothing (same methodology as `smooth.pos()` in the **fda** package). We also report the smoothing parameter $\lambda$ selected by GCV.
+
+```{r}
+agefine <- seq(0,1,length=100) # create a fine time grid
+mass_hat <- matrix(0,100,N) # store smooth growth curves on original scale
+logmass_hat <- matrix(0,100,N) # store smooth log growth curves
+pred_mass <- matrix(0,100,N) # store the smoothed mass recovered by taking exponential
+lambda_mass <- rep(0,N) # smoothing parameter used for each growth curve
+lambda_logmass <- rep(0,N) # smoothing parameter used for each log growth curve
+for (i in 1:N){
+  ss_mass <- smooth.spline(age_list_new[[i]], trait_list[[i]], cv=FALSE, 
+                           all.knots=TRUE)
+  ss_logmass <- smooth.spline(age_list_new[[i]], log(trait_list[[i]]), cv=FALSE,
+                              all.knots=TRUE) # all distinct points as knots
+  mass_hat[,i] <- predict(ss_mass,agefine)$y
+  logmass_hat[,i] <- predict(ss_logmass, agefine)$y
+  pred_mass[,i] <- exp(predict(ss_logmass,agefine)$y)
+  lambda_mass[i] <- ss_mass$lambda
+  lambda_logmass[i] <- ss_logmass$lambda
+}
+```
+
+Some smoothed curves have negative values near $t=0$, let us plot them and the corresponding original data points.
+
+```{r}
+neg_cols <- unique(which(mass_hat < 0, arr.ind = TRUE)[,2])
+length(neg_cols) 
+neg_mass<- mass_hat[,neg_cols] # matrix with each column represents wrongly smoothed growth curves
+colnames(neg_mass) <- as.character(neg_cols)
+```
+
+There are 77 questionable smoothed growth curves. On each plot, black points represent the data measurements; blue curve represents smoothing on the original scale; red curve represents smoothing by imposing positive constraint.
+
+```{r include=FALSE}
+par(mfrow=c(3,3))
+for (i in 1:length(neg_cols)){
+  plot(age_list_new[[neg_cols[i]]], trait_list[[neg_cols[i]]], type="p", xlab="Time", ylab="Mass", main=paste("Subject",neg_cols[i]))
+  lines(agefine,mass_hat[,neg_cols[i]],type="l", col="blue")
+  lines(agefine, pred_mass[,neg_cols[i]],type="l", col="red")
+}
+```
+
+```{r echo=FALSE}
+par(mfrow=c(2,3))
+demo <- c(5, 16, 46, 60, 534)
+for (i in 1:length(demo)){
+  plot(age_list_new[[demo[i]]], trait_list[[demo[i]]], type="p", xlab="Time", ylab="Mass", main=paste("Subject",demo[i]))
+  lines(agefine,mass_hat[,demo[i]],type="l", col="blue")
+  lines(agefine, pred_mass[,demo[i]],type="l", col="red")
+}
+```
+
+```{r include = FALSE}
+## Check the largest and smallest number of measurements per subject
+##Initialize variables to hold the maximum and minimum lengths
+max_length <- -Inf
+min_length <- Inf
+
+## Iterate through each list in trait_list
+for (i in 1:length(trait_list)) {
+  current_length <- length(trait_list[[i]])
+  if (current_length > max_length) {
+    max_length <- current_length
+  }
+  if (current_length < min_length) {
+    min_length <- current_length
+  }
+}
+
+print(paste("Largest number of elements in a list:", max_length))
+print(paste("Smallest number of elements in a list:", min_length))
+```
+
+Sampling points are not taken at fixed times as they vary in number and location. The largest number of measurements per individual is 14 and the smallest is 5. Mass is measured more frequently in the last days of the time period. The irregular sampling points lead to two problems: for subjects with fewer measurements, GCV will select very large $\lambda$, and fitted curves approach to standard linear regression to the data (e.g. Subject 16, Subject 60); for subjects with more sparse measurements around the starting period, the fitted curves have negative values near $t=0$ (e.g. Subject 5, Subject 46).
+
+If we compare the two methods to smooth the growth curves, we find that positive smoothing performs better in general. So we continue with positive smoothing and manually adjust the smoothing parameter $\lambda$ for subjects where the initial smoothing results are unsatisfactory, i.e. Subject 534 with $\lambda_{534} = 93480.4$.
+
+```{r include = FALSE}
+par(mfrow=c(3,3))
+for (i in 1:N){
+  plot(age_list_new[[i]], trait_list[[i]], type = "p", xlab="Time", ylab="Mass", main=paste("Subject", i))
+  lines(agefine, pred_mass[,i], type="l", col="red")
+  legend("bottomright", legend = paste("lambda=", lambda_logmass[i]))
+}
+```
+
+Most smoothing parameter $\lambda$s selected by GCV are quite small. Let us restrict $\lambda \le 10^{-4}$, and re-smooth growth curves. The adjusted smooth growth curves are stored in the matrix `trait_hat`.
+
+```{r include=FALSE}
+large_lam <- which(lambda_logmass > 1e-4)
+for (i in 1:length(large_lam)){
+  plot(age_list_new[[large_lam[i]]], trait_list[[large_lam[i]]], type="p", xlab="Time", ylab="Mass", main=paste("Subject",large_lam[i]))
+  lines(agefine, pred_mass[,large_lam[i]],type="l", col="red")
+}
+
+## change lambda to 1e-4
+mass_adjusted <- matrix(0,100, length(large_lam))
+for ( i in 1: length(large_lam)){
+  ss_new <- smooth.spline(age_list_new[[large_lam[i]]], log(trait_list[[large_lam[i]]]), all.knots = TRUE, lambda = 1e-4)
+  mass_adjusted[,i] <- exp(predict(ss_new, agefine)$y)
+}
+colnames(mass_adjusted) <- as.character(large_lam)
+```
+
+```{r include=FALSE}
+par(mfrow=c(3,3))
+for (i in 1:length(large_lam)){
+  plot(age_list_new[[large_lam[i]]], trait_list[[large_lam[i]]], type="p", xlab="Time", ylab="Mass", main=paste("Subject",large_lam[i]))
+  lines(agefine, mass_adjusted[,i],type="l", col="red")
+}
+```
+
+```{r include=FALSE}
+trait_hat <- pred_mass
+for (i in 1: length(large_lam)){
+  trait_hat[,large_lam[i]] <- mass_adjusted[,i]
+}
+```
+
+```{r}
+par(mfrow=c(1,2))
+
+plot(c(0,1), c(0,400), xlab="Time", ylab="Mass", main="Growth Plot (rescaled time)", type="n")
+for (i in 1:N){
+  lines(age_list_new[[i]], trait_list[[i]],type="l", col=i)
+}
+
+matplot(agefine, trait_hat, col=1:N, type = "l", xlab="Time", ylab="Mass", main="Smoothed Growth Plot")
+```
+
+## Curve registration
+
+```{r message=FALSE, warning=FALSE}
+aligned_mass_process <- time_warping(f=trait_hat, time=agefine)
+aligned_mass_curve <- aligned_mass_process$fn
+aligned_mean <- aligned_mass_process$fmean
+warping_funs <- aligned_mass_process$warping_functions
+
+
+par(mfrow=c(1,3))
+plot(c(0,1), c(0,1), type = 'n',xlab = 'Time', 
+     ylab = 'warping functions')
+for (i in 1:N){
+  lines(agefine, warping_funs[,i], type="l" , col=i)
+}
+
+
+plot(c(0,1), c(0,400), type = 'n',xlab = 'Time', 
+     ylab = 'Mass', main = 'Aligned Growth Plot')
+for (i in 1:N){
+  lines(agefine, aligned_mass_curve[,i], type="l",col=i)
+}
+lines(agefine, aligned_mean, lwd = 3.0, col="red")
+legend("bottomright", legend="mean", lwd=3.0, col="red")
+
+matplot(agefine, trait_hat, col=1:N, type = "l", xlab="Time", ylab="Mass", main="Smoothed Growth Plot")
+```
+
+## Functional Principal Component Analysis
+
+```{r}
+fpcaobj_mass <- prcomp(x=t(aligned_mass_curve), retx = TRUE, center = TRUE, rank. = 3)
+eigen_mass <- fpcaobj_mass$rotation # eigen vectors
+
+par(mfrow=c(3,1))
+for (i in 1:3) {
+  plot(agefine, eigen_mass[, i], type = "l", 
+       xlab = "time", ylab = "",
+       main = paste("Growth Curve Principal Component", i))
+}
+
+## Test for orthogonality
+eigen_mass[,1] %*% eigen_mass[,2] 
+eigen_mass[,1] %*% eigen_mass[,3] 
+eigen_mass[,2] %*% eigen_mass[,3] 
+```
+
+```{r include=FALSE}
+fit_genetic_fmm <- function(formula, data, A, phi)
+  {
+  #'This function uses the lme4 package to fit a linear mixed-effect model to genetic data, 
+  #'with a specified additive genetic relationship matrix A.
+  #'In this particular format, we fit both fixed effects and random effects using the same
+  #'basis functions (principal components obtained from running FPCA).
+  #'
+  #'@param fromula a two-sided linear formula object describing both the fixed-effects
+  #'and random-effects of the model (as the same form used in lmer).
+  #'@param data an data frame containing the variables named in formula.
+  #'@param A a sparse matrix: an additive genetic relationship matrix 
+  #'which models the genetic relationship in the dataset.
+  #'@param phi functional basis: a matrix where each column represents a basis element.
+  #'@return returns a fitted mixed-effect model
+  
+  # Random effect parameterisation
+  require(lme4)
+  require(Matrix)
+  
+  L <- as(t(chol(A)), "dgCMatrix") # cholesky decomposition of A
+  p <- dim(phi)[2] # number of elements of the functional basis
+  I_p <- as(diag(p), "dgCMatrix")
+  M <- kronecker(L, I_p) # used to update the genetic design matrix Z_E = ZM
+  
+  # Fit mixed-effect model
+  
+  ## define the mixed-model formula
+  fmmParsedForm <- lFormula(formula, data=data)
+  
+  ### Compute the random-effect matrix
+  Z_pre <- t(fmmParsedForm$reTrms$Zt)
+  ZE <- Z_pre[,1:dim(M)[1]] # environmental random-effect matrix
+  ZG <- Z_pre[,1:dim(M)[1]] %*% M # update the genetic-random effect matrix
+  Z <- cbind(ZG, ZE) # the updated random effect design matrix
+  
+  ### Modularisation
+  fmmParsedForm$reTrms$Zt <- t(Z) # Update Z in the reTrms term
+  fmmDevFun <- do.call(mkLmerDevfun,fmmParsedForm) # update the objective function
+  fmmOpitimize <- optimizeLmer(devfun=fmmDevFun)# update the optimisation module
+  
+  ### returns the mixed-effect model
+  fmm <- mkMerMod(rho=environment(fmmDevFun),opt=fmmOpitimize, reTrms=fmmParsedForm$reTrms, fr=fmmParsedForm$fr)
+
+  return(fmm)
+}
+```
+
+## Fit Genetic Functional Mixed-effect Model
+
+Step 1: Combine the subject ids, aligned mass and principal components into a dataframe which will be used to fit the mixed-effect model.
+
+```{r}
+subjectID <- rep(unique(df$id), each=100)
+trait_pred <- c(aligned_mass_curve)
+basis1 <- rep(eigen_mass[,1], times = 873)
+basis2 <- rep(eigen_mass[,2], times = 873)
+basis3 <- rep(eigen_mass[,3], times = 873)
+new_df <- data.frame(subjectID, trait_pred, basis1, basis2, basis3)
+names(new_df) <- c("subjectID", "trait_hat", "basis1", "basis2", "basis3")
+```
+
+Step 2: Calculate the pedigree and the additive genetic relationship matrix $A$.
+
+```{r warning=FALSE, message=FALSE}
+pos = df$id[FirstUniqueIdPos] # extract ids for all subjects
+sire_id = df$sire[FirstUniqueIdPos] # extract ids for sire
+dam_id = df$dam[FirstUniqueIdPos] # extract ids for dam
+
+pede <- editPed(sire = sire_id, dam = dam_id, label = pos)
+ped<- with(pede, pedigree(label=label, sire=sire, dam=dam))
+A <- getA(ped)[163:1035,163:1035]
+```
+
+Step 3: Fit both fixed and random effects using the same basis.
+
+```{r}
+fmeFormula <- trait_hat ~ new_df$basis1 + new_df$basis2 + new_df$basis3 + 
+  (-1 + new_df$basis1 + new_df$basis2 + new_df$basis3 | new_df$subjectID) + 
+  (-1 + new_df$basis1 + new_df$basis2 + new_df$basis3 | new_df$subjectID) # LME model formula
+system.time(
+  fit_sameBasis <- fit_genetic_fmm(formula= fmeFormula, data=new_df, A = A, phi = eigen_mass)
+) # user  system  elapsed 
+# 
+
+summary(fit_sameBasis)
+```
+
+Step 4: Visualise the results 1. Extract the fixed effect and compare with the population mean calculated from the aligned data.
+
+```{r}
+fe_coefs <- fixef(fit_sameBasis) # extract the fixed-effect coefs
+fixef <- eigen_mass%*%fe_coefs[2:4] + fe_coefs[1]
+
+par(mfrow=c(1,1))
+plot(agefine, fixef, type = "l", xlab="time", ylab="mass")
+lines(agefine, aligned_mean, type="l", col="red")
+legend("bottomright", legend=c("fixed-effect", "population mean"), col=c("black", "red"), lwd=1.0)
+```
+
+2.  Plot the fitted curves and compare with the original data
+
+```{r}
+fitted_list <- split(fitted(fit_sameBasis), new_df$subjectID) # fitted value 
+par(mfrow=c(1,2))
+plot(c(0,1), c(0,400), type="n", xlab="time", ylab="mass", main="Fitted Value of RR")
+for (i in 1:N){
+  lines(agefine, fitted_list[[i]], type="l", col=i)
+}
+plot(c(0,1), c(0,400), type="n", xlab="time", ylab="mass", main="Smoothed Growth Plot")
+for (i in 1:N){
+  lines(agefine, aligned_mass_curve[,i], type="l", col=i)
+}
+
+```
+
+3.  Extract the genetic and environmental covariance matrices and convert them to functions.
+
+```{r}
+vc <- VarCorr(fit_sameBasis)
+CG <- vc[["new_df.subjectID"]] # genetic covariance
+CE <- vc[["new_df.subjectID.1"]] # environmental covariance
+
+### Convert to genetic covariance function
+CG_fun <- eigen_mass %*% CG %*% t(eigen_mass)
+### environmental covariance function
+CE_fun <- eigen_mass %*% CE %*% t(eigen_mass)
+### Phenotypic covariance function
+P_fun <- CG_fun + CE_fun
+```
+
+Visualise variance functions:
+
+```{r}
+fig1 <- plot_ly(x = agefine, y = agefine, z = ~CG_fun, scene='scene1') 
+fig1 <- fig1 %>% add_surface(showscale=FALSE)
+
+fig2 <- plot_ly(x = agefine, y = agefine,z = ~CE_fun, scene='scene2') 
+fig2 <- fig2 %>% add_surface(showscale=FALSE)
+
+fig3 <- plot_ly(x = agefine, y = agefine,z = ~P_fun, scene='scene3') 
+fig3 <- fig3 %>% add_surface(showscale=FALSE)
+
+
+# subplot and define scene
+fig_RR1 <- subplot(fig1, fig2, fig3) 
+fig_RR1 <- fig_RR1 %>% layout(title = "Covariance Plot",
+                      scene = list(domain=list(x=c(0,0.32),y=c(0.25,1)),
+                                   xaxis=list(title = "time"),
+                                   yaxis =list(title = "time") , 
+                                   zaxis=list(range=c(-10,1200),
+                                              title = "Gen"),
+                                   aspectmode='cube'),
+                      scene2 = list(domain=list(x=c(0.34,0.66),y=c(0.25,1)),
+                                    xaxis=list(title = "time"),
+                                    yaxis =list(title = "time"),
+                                    zaxis=list(range=c(-10,1200),
+                                   title = "Env"),
+                                    aspectmode='cube'),
+                      scene3 = list(domain=list(x=c(0.68,1),y=c(0.25,1)),
+                                    xaxis=list(title = "time"),
+                                    yaxis =list(title = "time"),
+                                    zaxis=list(range=c(-10,1200),
+                                            title = "Phe"),
+                                    aspectmode='cube'))
+
+fig_RR1
+```
