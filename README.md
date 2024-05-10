@@ -21,11 +21,11 @@ The pdf file `FMEMs in Quantitative Genetics` contains an overview of this resea
 - `Model_fitting_efficiency.Rmd`: We compare three ways to fit data to the genetic model: 1. fit raw data; 2. fit smoothed data on the original time points; 3. fit smoothed data on the dense grid (computationally inefficient).
 
   *May 9th*:
-- `Functional_simulation.Rmd`: Here we fit simulated data with known covariance structures to the genetic mixed-effect model. This setting will enable us to compute a sample of estimated covariance functions to be compared with the true ones. Details of the simulation study can be found in *FMEMs in Quantitative Genetics*.
+- `Functional_simulation.Rmd`: Here we fit simulated data with known covariance structures to the genetic mixed-effect model. This setting will enable us to compute a sample of estimated covariance functions which will then be compared with the true ones. Details of the simulation study can be found in *FMEMs in Quantitative Genetics*.
 
    *May 10th*:
 - `Bootstrapping.R`:
 ### R package help documents
 - `fdasrvf`: perform alignment, PCA, and modelling of multidimensional and unidimensional functions using the square-root velocity framework.
 - `pedigreemm`: fit pedigree-based mixed-effects models.
-- 
+- `List of available methods for merMod objects`
