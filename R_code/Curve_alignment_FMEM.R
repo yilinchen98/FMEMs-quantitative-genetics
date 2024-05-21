@@ -175,13 +175,54 @@ for (i in 1:N){
 }
 
 subject_id <- unlist(id_list) 
-trait <- unsplit(smoothed_curve, subject_id)
+trait <- unlist(smoothed_curve)
 basis <- do.call(rbind,basisfun_list)
 colnames(basis) <- c("phi1", "phi2", "phi3")
 
 df_model <- data.frame(id = subject_id, trait = trait, basis) # this is new dataframe
 
+### model formula
+fform <- trait ~ df_model$phi1 + df_model$phi2 + df_model$phi3 + 
+  (-1 + df_model$phi1 + df_model$phi2 + df_model$phi3 | df_model$id) + 
+  (-1 + df_model$phi1 + df_model$phi2 + df_model$phi3 | df_model$id) 
+
+system.time(
+  ft <- fit_genetic_fmm(fform, df_model, A, basis)
+) # user   system  elapsed
+
+summary(ft)
+
+## Model result
+### Extract covariance function
+vc <- VarCorr(ft)
+CG <- vc[["df_model.id"]] ## genetic covariance
+CE <- vc[["df_model.id.1"]] ## environmental covariance
 
 
+### Convert to genetic covariance function
+CG_fun <- joint_eig_vecs %*% CG %*% t(joint_eig_vecs)
+### environmental covariance function
+CE_fun <- joint_eig_vecs%*% CE %*% t(joint_eig_vecs)
 
+timefine <- seq(0,1,length = 200)
 
+fig1 <- plot_ly(x = timefine, y = timefine, z = ~CG_fun, scene='scene1') 
+fig1 <- fig1 %>% add_surface(showscale=FALSE)
+
+fig2 <- plot_ly(x = timefine, y = timefine,z = ~CE_fun, scene='scene2') 
+fig2 <- fig2 %>% add_surface(showscale=FALSE)
+
+fig_RR1 <- subplot(fig1, fig2) 
+fig_RR1 <- fig_RR1 %>% layout(title = "Covariance Plot",
+                              scene = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
+                                           xaxis=list(title = "time"),
+                                           yaxis =list(title = "time") , 
+                                           zaxis=list(title = "Gen"),
+                                           aspectmode='cube'),
+                              scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
+                                            xaxis=list(title = "time"),
+                                            yaxis =list(title = "time"),
+                                            zaxis=list(title = "Env"),
+                                            aspectmode='cube'))
+
+fig_RR1
