@@ -138,10 +138,10 @@ basis <- eval.basis(time_rang, basisObj) # evaluate basis at time points
 
 ### true genetic covariance function
 CG_fun_true <- basis %*% C_gen %*% t(basis)
-save(CG_fun_true, file="true_G.Rdata")
+#save(CG_fun_true, file="true_G.Rdata")
 ### true environmental covariance function
 CE_fun_true <- basis %*% C_env %*% t(basis) 
-save(CE_fun_true, file = "true_E.Rdata")
+#save(CE_fun_true, file = "true_E.Rdata")
 
 ### reparameterised genetic covariance 
 C_gen_para <- as(kronecker(A, C_gen), "dgCMatrix") 
@@ -179,12 +179,12 @@ for (j in 1:n_groups){
   Y[,j] <- Yj@x 
 }
 
-## fit the first set of generated data
+## fit 41 set of generated data
 time_rang <- seq(0,1,length=n)
 timefine <- seq(0,1,length=100) 
 uniqueIds <- seq(1,N, length=N)
 id <- rep(uniqueIds, each=n)
-y_list <- split(Y[,1], id)
+y_list <- split(Y[,41], id)
 
 ### Data smoothing
 timefine <- seq(0,1,length=100) # dense time grid
@@ -230,10 +230,10 @@ sig2 <- sigma(ft)^2 ## estimated residual variance
 
 ### Convert to genetic covariance function
 CG_fun_hat <- pcs %*% CG %*% t(pcs)
-save(CG_fun_hat, file = "GenFun_hat_31050_1.Rdata")
+save(CG_fun_hat, file = "GenFun_hat_31050_41.Rdata")
 ### environmental covariance function
 CE_fun_hat <- pcs%*% CE %*% t(pcs)
-save(CE_fun_hat, file = "EnvFun_hat_31050_1.Rdata")
+save(CE_fun_hat, file = "EnvFun_hat_31050_41.Rdata")
 
 ### Trace of genetic covariance
 tr_gen_hat <- tr(CG_fun_hat)
@@ -269,8 +269,8 @@ y_hat <- matrix(0, 100, N)
 
 n_iter <- 500 # number of iterations
 
-gen_cov_fun <- array(data = 0, c(10,10,n_iter)) # 3d matrix store genetic covariance function of 500 iterations
-env_cov_fun <- array(data = 0, c(10,10,n_iter)) # 3d matrix store environmental covariance function of 500 iterations
+gen_cov_fun <- array(data = 0, c(n,n,n_iter)) # 3d matrix store genetic covariance function of 500 iterations
+env_cov_fun <- array(data = 0, c(n,n,n_iter)) # 3d matrix store environmental covariance function of 500 iterations
 
 tr_gen <- rep(0, n_iter) # store the trace of genetic covariance function
 tr_env <- rep(0, n_iter) # store the trace of environmental covariance function
@@ -328,10 +328,10 @@ for (k in 1:n_iter){
   tr_gen[k] <- tr(CG_fun)
   tr_env[k] <- tr(CE_fun)
   
-  save(gen_cov_fun, file = "gen_31050_1.Rdata")
-  save(env_cov_fun, file = "env_31050_1.Rdata")
-  save(tr_gen, file = "tr_gen_31050_1.Rdata")
-  save(tr_env, file = "tr_env_31050_1.Rdata")
+  save(gen_cov_fun, file = "gen_31050_41.Rdata")
+  save(env_cov_fun, file = "env_31050_41.Rdata")
+  save(tr_gen, file = "tr_gen_31050_41.Rdata")
+  save(tr_env, file = "tr_env_31050_41.Rdata")
   
 }
 
