@@ -10,6 +10,7 @@ library(pedigreemm)
 library(mvnfast)
 library(ggplot2)
 library(plotly)
+library(pracma)
 
 ## Import data and rescale to unit interval
 setwd("D:/KCL_2023-2027_PhD/Genetics_FMEM_Project/FMEMs-quantitative-genetics/R_code")
@@ -46,12 +47,15 @@ for (i in 1:N){
 }
 
 large_lam <- which(lam > 1e-4)
+logmass_ajusted <- matrix(0,100, length(large_lam))
 mass_adjusted <- matrix(0,100, length(large_lam))
 for ( i in 1: length(large_lam)){
   ss_new <- smooth.spline(age_list_new[[large_lam[i]]], log(trait_list[[large_lam[i]]]), 
                           all.knots = TRUE, lambda = 1e-4) # restrict lambda <=1e-4
+  logmass_ajusted[,i] <- predict(ss_new,agefine)$y
   mass_adjusted[,i] <- exp(predict(ss_new, agefine)$y)
 }
+colnames(logmass_ajusted) <- as.character(large_lam)
 colnames(mass_adjusted) <- as.character(large_lam)
 
 ## Let reform the smoothed growth curves into a matrix
@@ -60,69 +64,48 @@ for (i in 1: length(large_lam)){
   trait_hat[,large_lam[i]] <- mass_adjusted[,i]
 }
 
+logTrait_hat <- logmass
+for (i in 1:length(large_lam)){
+  logTrait_hat[,large_lam[i]] <- logmass_ajusted[,i] 
+}
+
 ## Curve alignment
 ### use fdasrvf to compute the aligned functions and warping functions
 aligned_mass_process <- time_warping(f=trait_hat, time=agefine)
-aligned_mass_curve <- aligned_mass_process$fn # aligned curves (amplitude function)
-qn <- aligned_mass_process$qn # aligned curves in SRVF space
+aligned_mass_curve <- aligned_mass_process$fn # aligned curves / amplitude function
 aligned_mean <- aligned_mass_process$fmean
 warping_funs <- aligned_mass_process$warping_functions # warping function
+v <- SqrtMean(warping_funs)$vec # shooting vector / phase function
 
-## Compute phase function
-jointFPCA_process <- jointFPCA(aligned_mass_process, no = 3)
-C <- jointFPCA_process$C # scaling coefficient
-psi <- SqrtMean(warping_funs)$psi # srvf of warping functions
-v <- SqrtMean(warping_funs)$vec #phase function = shooting vector
-
-# The eigen vector extracted from the function joinFPCA
-# it joins the qn (srvf of original curves) and the warping functions
-eigen_vec <- jointFPCA_process$U # eigen vector
-
-par(mfrow = c(3,1))
-for (i in 1:3) {
-  plot(seq(0,1,length=201), eigen_vec[, i], type = "l", 
-       xlab = "time", ylab = "",
-       main = paste(" Eigen Vector", i))
-}
-
-g2 <- rbind(qn, C*v)
-
-comb_pca <-  prcomp(x=t(g2), retx = TRUE, center = TRUE, rank. = 3)$rotation
+### FPCA
+eigen_vecs <- prcomp(t(aligned_mass_curve), retx = TRUE, center = TRUE, rank. = 3)$rotation
 par(mfrow=c(3,1))
 for (i in 1:3) {
-  plot(seq(0,1,length=200), comb_pca[, i], type = "l", 
+  plot(seq(0,1,length=100), eigen_vecs[, i], type = "l", 
        xlab = "time", ylab = "",
-       main = paste(" Combined Principal Component", i))
+       main = paste(" Principal Component", i))
 }
-
 
 ### joint FPCA
-#jointFPCA_process <- jointFPCA(aligned_mass_process, no = 3)
-#C <- jointFPCA_process$C # scaling coefficient
+C <- compute_scaling_para(aligned_mass_process, m=2)
 g <- rbind(aligned_mass_curve, C*v) # joint aligned curves (amplitude functions) and corresponding phase function
 
-Joint_fpcaobj <- prcomp(x=t(g), retx = TRUE, center = TRUE, rank. = 3)
+Joint_fpcaobj <- prcomp(x=t(g), retx = TRUE, center = TRUE, rank. = 2)
 joint_eig_vecs <- Joint_fpcaobj$rotation # eigen vectors
-par(mfrow=c(3,1))
-for (i in 1:3) {
-  plot(seq(0,1,length=200), joint_eig_vecs[, i], type = "l", 
+par(mfrow=c(2,1))
+for (i in 1:2) {
+  plot(seq(0,2,length=200), joint_eig_vecs[, i], type = "l", 
        xlab = "time", ylab = "",
        main = paste(" Joint Principal Component", i))
 }
 
-joint_eig_vecs[,1] %*% joint_eig_vecs[,2]
-joint_eig_vecs[,1] %*% joint_eig_vecs[,3]
-joint_eig_vecs[,3] %*% joint_eig_vecs[,2]
-
-### FPCA on aligned curve only
-fpcaobj_mass <- prcomp(x=t(aligned_mass_curve), retx = TRUE, center = TRUE) 
-eigen_mass <- fpcaobj_mass$rotation # eigen vectors
-
+#########################################################################################################
+U <- jointFPCA(aligned_mass_process, showplot = F)$U 
 par(mfrow=c(3,1))
 for (i in 1:3) {
-  matplot(agefine, eigen_mass[, i], type = "l", 
-          xlab = "time", ylab = "",
-          main = paste("Growth Principal Component", i))
+  plot(seq(0,2,length=201), U[, i], type = "l", 
+       xlab = "time", ylab = "",
+       main = paste(" Joint Principal Component in SRVF", i))
 }
 
 ## Fit mixed-effect model
@@ -176,14 +159,14 @@ for (i in 1:N){
 subject_id <- unlist(id_list) 
 trait <- unlist(smoothed_curve)
 basis <- do.call(rbind,basisfun_list)
-colnames(basis) <- c("phi1", "phi2", "phi3")
+colnames(basis) <- c("phi1", "phi2")
 
 df_model <- data.frame(id = subject_id, trait = trait, basis) # this is new dataframe
 
 ### model formula
-fform <- trait ~ df_model$phi1 + df_model$phi2 + df_model$phi3 + 
-  (-1 + df_model$phi1 + df_model$phi2 + df_model$phi3 | df_model$id) + 
-  (-1 + df_model$phi1 + df_model$phi2 + df_model$phi3 | df_model$id) 
+fform <- trait ~ df_model$phi1 + df_model$phi2 +  
+  (-1 + df_model$phi1 + df_model$phi2 | df_model$id) + 
+  (-1 + df_model$phi1 + df_model$phi2 | df_model$id) 
 
 system.time(
   ft <- fit_genetic_fmm(fform, df_model, A, basis)
@@ -203,7 +186,7 @@ CG_fun <- joint_eig_vecs %*% CG %*% t(joint_eig_vecs)
 ### environmental covariance function
 CE_fun <- joint_eig_vecs%*% CE %*% t(joint_eig_vecs)
 
-timefine <- seq(0,1,length = 200)
+timefine <- seq(0,2,length = 200)
 
 fig1 <- plot_ly(x = timefine, y = timefine, z = ~CG_fun, scene='scene1') 
 fig1 <- fig1 %>% add_surface(showscale=FALSE)
@@ -225,83 +208,3 @@ fig_RR1 <- fig_RR1 %>% layout(title = "Covariance Plot",
                                             aspectmode='cube'))
 
 fig_RR1
-
-##########################################################################################
-
-## Fit data in SRVF space
-
-### joins the qn (srvf of original curves) and the warping functions
-eigen_vec <- jointFPCA_process$U # eigen vector
-
-qn_list <- list()
-for (i in 1:N){
-  inter_qn <- convert_to_basisfunctions(t = agefine, eigenvecs = qn[,i],
-                                           tout = age_list_new[[i]])
-  qn_list[[i]] <- inter_qn
-}
-
-basisfun_list1 <- list() # joint PCs
-for (i in 1:N){
-  PCs_curve1 <- convert_to_basisfunctions(t = agefine, eigenvecs = eigen_vec[1:100,],
-                                         tout = age_list_new[[i]])
-  PCs_warping1 <- convert_to_basisfunctions(t = agefine, eigenvecs = eigen_vec[102:201,],
-                                           tout = age_list_new[[i]])
-  basisfun_list1[[i]] <- rbind(PCs_curve1,PCs_warping1)
-}
-
-qn_curve <- list()
-for (i in 1:N){
-  qn_data <- c(qn_list[[i]], phasefun_list[[i]]) # combined smoothed curve data and warping functions (shooting vector)
-  qn_curve[[i]] <- qn_data
-}
-
-qcurve <- unlist(qn_curve)
-basis1 <- do.call(rbind, basisfun_list1)
-colnames(basis1) <- c("phi1", "phi2", "phi3")
-
-df_modelq <- data.frame(id = subject_id, trait = qcurve, basis1) # this is new dataframe
-
-### model formula
-fformq <- trait ~ df_modelq$phi1 + df_modelq$phi2 + df_modelq$phi3 + 
-  (-1 + df_modelq$phi1 + df_modelq$phi2 + df_modelq$phi3 | df_modelq$id) + 
-  (-1 + df_modelq$phi1 + df_modelq$phi2 + df_modelq$phi3 | df_modelq$id) 
-
-system.time(
-  ftq <- fit_genetic_fmm(fformq, df_modelq, A, basis1)
-) # user   system  elapsed
-
-summary(ftq)
-
-vcq <- VarCorr(ftq)
-CGq <- vcq[["df_modelq.id"]] ## genetic covariance
-CEq <- vcq[["df_modelq.id.1"]] ## environmental covariance
-
-
-### Convert to genetic covariance function
-CG_funq <- eigen_vec %*% CGq %*% t(eigen_vec)
-### environmental covariance function
-CE_funq <- eigen_vec%*% CEq %*% t(eigen_vec)
-
-timefine <- seq(0,1,length = 201)
-
-figq1 <- plot_ly(x = timefine, y = timefine, z = ~CG_funq, scene='scene1') 
-figq1 <- figq1 %>% add_surface(showscale=FALSE)
-
-figq2 <- plot_ly(x = timefine, y = timefine,z = ~CE_funq, scene='scene2') 
-figq2 <- figq2 %>% add_surface(showscale=FALSE)
-
-fig_RRq <- subplot(figq1, figq2) 
-fig_RRq <- fig_RRq %>% layout(title = "Covariance Plot",
-                              scene = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                           xaxis=list(title = "time"),
-                                           yaxis =list(title = "time") , 
-                                           zaxis=list(title = "Gen"),
-                                           aspectmode='cube'),
-                              scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                            xaxis=list(title = "time"),
-                                            yaxis =list(title = "time"),
-                                            zaxis=list(title = "Env"),
-                                            aspectmode='cube'))
-
-fig_RRq
-
