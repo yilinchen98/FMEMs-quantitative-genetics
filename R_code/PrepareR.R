@@ -220,11 +220,13 @@ compute_C_2 <- function(warping_data, m = 3){
   return(C)
 }
 
+## load data
 setwd("D:/KCL_2023-2027_PhD/Genetics_FMEM_Project/FMEMs-quantitative-genetics/R_code")
 TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4)
 
+## calculate genetic relationship matrix
 FirstUniqueIdPos <- which(duplicated(df$id) == FALSE)
 
 pos = df$id[FirstUniqueIdPos] # extract ids for all subjects
