@@ -1,6 +1,7 @@
 library(Matrix)
 library(MASS)
 library(fda)
+library(fdasrvf)
 library(lme4)
 library(pedigreemm)
 library(mvnfast)
