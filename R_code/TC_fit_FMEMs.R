@@ -146,7 +146,7 @@ test_A <- as.matrix(getA(test_ped)[3:5,3:5])
 test_M <- as.matrix(kronecker(chol(test_A),I_test))
 all(test_M == as.matrix(M)[1:9,1:9]) # True
 
-test_formula <- trait ~ test_df$phi1 + test_df$phi2 + test_df$phi3 + (-1 + test_df$phi1 + test_df$phi2 + test_df$phi3 | test_df$id) + 
+test_formula <- trait ~ -1 + test_df$phi1 + test_df$phi2 + test_df$phi3 + (-1 + test_df$phi1 + test_df$phi2 + test_df$phi3 | test_df$id) + 
   (-1 + test_df$phi1 + test_df$phi2 + test_df$phi3 | test_df$id) 
 test_parsedFormula <- lFormula(formula = test_formula, data = test_df)
 testZ_pre <- as.matrix(t(test_parsedFormula$reTrms$Zt))
