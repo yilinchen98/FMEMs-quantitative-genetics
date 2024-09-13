@@ -1,5 +1,5 @@
-## For this simulation, we smooth data on the orignial time grid,
-## compute the principal components, fit the data using 5 PCs.
+## For this simulation, we smooth data on the original time grid,
+## Compute the principal components and fit the data using 5 PCs.
 
 ## load packages 
 library(Matrix)
