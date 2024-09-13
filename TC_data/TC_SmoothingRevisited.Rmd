@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Import library
 
-```{r, include = FALS}
+```{r, include = FALSE}
 fit_genetic_fmm <- function(formula, data, A, nbasis, control = lmerControl()) {
   #' This function uses the lme4 package to fit a linear mixed-effect model to genetic data, 
   #' with a specified additive genetic relationship matrix A.
