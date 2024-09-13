@@ -1,5 +1,5 @@
 # Bootstrap TC data
-## Use log scale
+## Use original scale
 
 ## load packages 
 library(Matrix)
