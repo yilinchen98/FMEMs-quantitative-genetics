@@ -1,4 +1,3 @@
-.libPaths("/scratch/users/k2368651/software/R/4.3")
 ## For this simulation, we smooth data on the orignial time grid,
 ## compute the principal components, fit the data using 5 PCs.
 
