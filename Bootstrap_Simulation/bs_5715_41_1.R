@@ -1,4 +1,3 @@
-.libPaths("/scratch/users/k2368651/software/R/4.3")
 ## load packages 
 library(Matrix)
 library(MASS)
@@ -132,7 +131,7 @@ mu_res_hat <- rep(0, N*n)
 res_cov_hat <- as(sig2_hat_41 * I_n, "sparseMatrix") 
 
 ### generate bootstrap samples
-n_iter <- 100 # number of iterations (parellel bootstrap jobs)
+n_iter <- 100 # number of iterations (parallel bootstrap jobs)
 uniqueIds <- seq(1,N, length=N)
 id <- rep(uniqueIds, each=n)
 
