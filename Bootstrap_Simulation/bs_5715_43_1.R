@@ -101,7 +101,7 @@ C5_true <- matrix(c(750, 10 ,130, 80, 250,
 ### residual variance
 sigma2 <- 15
 
-## fit group 41
+## fit group 43
 load("CG_hat_43.Rdata")
 load("CE_hat_43.Rdata")
 load("sig2_hat_43.Rdata")
