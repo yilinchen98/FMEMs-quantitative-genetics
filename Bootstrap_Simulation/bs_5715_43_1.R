@@ -1,4 +1,3 @@
-.libPaths("/scratch/users/k2368651/software/R/4.3")
 ## load packages 
 library(Matrix)
 library(MASS)
