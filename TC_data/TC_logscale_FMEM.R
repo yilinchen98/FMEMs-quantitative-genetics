@@ -30,6 +30,7 @@ for (i in 1:N){
 
 df$x_rescaled <- unsplit(age_list_new,id)
 df$logtrait <- log10(df$trait)
+log_trait_list <- split(df$logtrait,id)
 
 ## plot growth curve
 par(mar = c(5, 6, 4, 2) + 0.1)
@@ -138,6 +139,23 @@ print(combined_plot)
 
 ##############################################################################################################
 
+## Example of two growth curves with data ponits
+par(mar = c(5, 6, 4, 2) + 0.1)
+plot(c(0,1), c(0, 3), type = "n", 
+     xlab = "Time", 
+     ylab = expression(Log(Mass,~10^-5~g)),
+     xlim = c(0, 1), ylim = c(0,3), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+lines(age_list_new[[1]],log_trait_list[[1]], type = "l")
+lines(age_list_new[[1]],log_trait_list[[1]], type = "p")
+lines(age_list_new[[25]],log_trait_list[[25]], type = "l")
+lines(age_list_new[[25]],log_trait_list[[25]], type = "p")
+abline(h = 0, v=0)
+                       
 ## plot raw log growth curves vs plot smoothed log growth curves
 par(mar = c(5, 6, 4, 2) + 0.1)
 plot(c(0,1), c(0, 3), type = "n", 
@@ -224,24 +242,70 @@ pl <- fviz_eig(fpcaobj_logmass,
 pl
 #ggsave("pclogmass.png", plot = pl, width = 6, height = 4, dpi = 300)
 
-df_pcs_logmass <- data.frame(
-  Time = rep(timefine, 2),  # Repeat the time vector for two components
-  PC_Value = c(pcs_logmass[, 1], pcs_logmass[, 2]),  # Stack the first two principal components
-  Component = factor(rep(1:2, each = length(timefine)))  # Indicate which principal component each value belongs to
-)
+par(mfrow = c(2, 1))
+par(font.main = 1)
+plot(c(0,1), c(0, 1), type = "n", 
+     xlab = "Time", 
+     ylab = "",
+     xlim = c(0, 1), ylim = c(-0.1,0.2), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
+axis(side = 2, at = seq(-0.1, 0.2, by = 0.05), pos = 0) 
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+for (i in 1:N){
+  lines(timefine, pcs_logmass[,1], type = "l", col = i)
+}
+mtext("Principal Component 1 of Aligned Curves", side = 3, adj = 0, line = 1, font = 2)
+abline(h = 0, v=0)
 
-p1 <- ggplot(df_pcs_logmass[df_pcs_logmass$Component == 1, ], aes(x = Time, y = PC_Value)) +
-  geom_line() +
-  labs(x = "Time", y = "", title = "Principal Component 1") +
-  theme_minimal()
+par(font.main = 1)
+plot(c(0,1), c(0, 1), type = "n", 
+     xlab = "Time", 
+     ylab = "",
+     xlim = c(0, 1), ylim = c(-0.1,0.2), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
+axis(side = 2, at = seq(-0.1, 0.2, by = 0.05), pos = 0) 
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+for (i in 1:N){
+  lines(timefine, pcs_logmass[,2], type = "l", col = i)
+}
+mtext("Principal Component 2 of Aligned Curves", side = 3, adj = 0, line = 1, font = 2)
+abline(h = 0, v=0)
 
-p2 <- ggplot(df_pcs_logmass[df_pcs_logmass$Component == 2, ], aes(x = Time, y = PC_Value)) +
-  geom_line() +
-  labs(x = "Time", y = "", title = "Principal Component 2") +
-  theme_minimal()
-combined_plot <- p1 / p2 
-print(combined_plot)
+par(font.main = 1)
+plot(c(0,1), c(0, 1), type = "n", 
+     xlab = "Time", 
+     ylab = "",
+     xlim = c(0, 1), ylim = c(-0.3,0.15), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
+axis(side = 2, at = seq(-0.3, 0.15, by = 0.05), pos = 0) 
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+for (i in 1:N){
+  lines(timefine, pcs_logmass[,3], type = "l", col = i)
+}
+mtext("Principal Component 3 of Aligned Curves", side = 3, adj = 0, line = 1, font = 2)
+abline(h = 0, v=0)
 
+par(font.main = 1)
+plot(c(0,1), c(0, 1), type = "n", 
+     xlab = "Time", 
+     ylab = "",
+     xlim = c(0, 1), ylim = c(-0.2,0.4), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
+axis(side = 2, at = seq(-0.2, 0.4, by = 0.05), pos = 0) 
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+for (i in 1:N){
+  lines(timefine, pcs_logmass[,4], type = "l", col = i)
+}
+mtext("Principal Component 4 of Aligned Curves", side = 3, adj = 0, line = 1, font = 2)
+abline(h = 0, v=0)
 ################################################################################################
 
 ## Model Fitting (Log scale)
@@ -482,62 +546,3 @@ mtext("Environmental Eigenfunction (Log Scale)", side = 3, adj = 0, line = 1, fo
 legend("bottomright", legend= c("First EF", "Second EF"), lty = c("solid", "dashed"), bty = "n")
 abline(v=0)
 ################################################################################################
-
-## predicted responses based on selection gradients (genetic eigenfunctions)
-
-change_reponse1 <- rep(0, 100)
-for (i in 1:100){
-  integrand1 <- CG_funL[i,] * eigenfunL_CG1 
-  change_reponse1[i] <- trapz(timefine, integrand1)
-}
-
-par(mfrow = c(2,1), bty = "l")
-plot(timefine, change_reponse1, type = "l", xlab = "Time", 
-     ylab = "Logmass")
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-mtext("Change in the Mean Response wrt EF 1", side = 3, adj = 0, line = 1, font = 2)
-
-change_reponse2 <- rep(0, 100)
-for (i in 1:100){
-  integrand2 <- CG_funL[i,] * eigenfunL_CG2 
-  change_reponse2[i] <- trapz(timefine, integrand2)
-}
-plot(timefine, change_reponse2, type = "l", xlab = "Time", 
-     ylab = "Logmass")
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-mtext("Change in the Mean Response wrt EF 2", side = 3, adj = 0, line = 1, font = 2)
-######################################################################
-
-predicted_reponse1 <- change_reponse1 + aligned_logmass_mean
-predicted_reponse2 <- change_reponse2 + aligned_logmass_mean
-
-par(mfrow = c(2,1))
-plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
-     ylab = "Warping Functions",
-     xlim = c(0, 1), ylim = c(0,3), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-lines(timefine, predicted_reponse1, type = "l", col = "black")
-lines(timefine, aligned_logmass_mean, type = "l", col = "red")
-mtext("Predicted Response wrt EF 1", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
-legend("bottomright", legend = c("prediction","mean"), lty = c("solid", "solid"), col = c("black","red"), bty = "n")
-
-plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
-     ylab = "Warping Functions",
-     xlim = c(0, 1), ylim = c(0,3), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-lines(timefine, predicted_reponse2, type = "l", col = "black")
-lines(timefine, aligned_logmass_mean, type = "l", col = "red")
-mtext("Predicted Response wrt EF 2", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
-legend("bottomright", legend = c("prediction","mean"), lty = c("solid", "solid"), col = c("black","red"), bty = "n")
