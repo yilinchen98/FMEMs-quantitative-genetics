@@ -232,7 +232,7 @@ abline(h = 0, v=0)
 
 ## FPCA
 
-fpcaobj_logmass <- prcomp(x=t(aligned_logmass_curve), retx = TRUE, center = TRUE, rank. = 3)
+fpcaobj_logmass <- prcomp(x=t(aligned_logmass_curve), retx = TRUE, center = TRUE, rank. = 4)
 pcs_logmass <- fpcaobj_logmass$rotation # eigen vectors
 
 par(mfrow = c(1,1))
@@ -365,7 +365,7 @@ for (i in 1:N){
 }
 
 phi_logmass <- do.call(rbind,phi_logmass_list)
-colnames(phi_logmass) <- c("phi1", "phi2", "phi3")
+colnames(phi_logmass) <- c("phi1", "phi2", "phi3","phi4")
 
 ## Reform dataframe
 df_logmass <- data.frame(id = id, trait = unsplit(aligned_logtrait,id), phi_logmass)
@@ -388,7 +388,7 @@ isSingular(ffL) # original tol = 1e-4
 
 ## fixed effect
 betaL <- fixef(ffL)
-fefL <- pcs_logmass %*% betaL
+fefL <- pcs_logmass[,1:3] %*% betaL
 
 df_FE <- data.frame(
   Time = rep(timefine, 2),
@@ -530,6 +530,7 @@ lines(timefine, eigenfunL_CG2, type = "l", lty = "dashed")
 mtext("Genetic Eigenfunction (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
 legend("bottomright", legend= c("First EF", "Second EF"), lty = c("solid", "dashed"), bty = "n")
 abline(v=0)
+abline(h=0, lty = "dashed")
 
 plot(c(0,1), c(-0.25, 0.2), type = "n", 
      xlab = "Time", 
@@ -545,4 +546,28 @@ lines(timefine, eigenfunL_CE2, type = "l", lty = "dashed")
 mtext("Environmental Eigenfunction (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
 legend("bottomright", legend= c("First EF", "Second EF"), lty = c("solid", "dashed"), bty = "n")
 abline(v=0)
+abline(h=0, lty = "dashed")
 ################################################################################################
+
+## Selection to response
+
+eigenval1 <- eigen(CG_funL)$values[1]
+deltaY <- eigenval1 * eigenfunL_CG1
+Y_newgen <- aligned_logmass_mean + deltaY
+
+par(mfrow = c(1,1))
+par(mar = c(5, 6, 4, 2) + 0.1)
+plot(c(0,1), c(0, 3), type = "n", 
+     xlab = "Time", 
+     ylab = expression(Log(Mass,~10^-5~g)),
+     xlim = c(0, 1), ylim = c(0,3), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+lines(timefine, aligned_logmass_mean, type = "l", lty = "solid", col = "red")
+lines(timefine, Y_newgen, type = "l", lty = "dashed", col = "black")
+legend("bottomright", legend= c("Mean: current generation", "Mean: next generation"), lty = c("solid", "dashed"), bty = "n", col = c("red","black"))
+abline(v=0)
+abline(h = 0)
