@@ -29,13 +29,12 @@ C_fun_true7 <- basis7 %*% C_true %*% t(basis7)
 C_fun_true14 <- basis14 %*% C_true %*% t(basis14)
 
 # load result
-setwd("D:/KCL_2023-2027_PhD/FMEM_QuantiativeGenetics_Project/PhD_Project_Contents/R_code/Functional_simulation/simulation_results")
 files <- list.files(pattern = "\\.Rdata$")
 
 for (file in files) {
   load(file)
 }
-load("D:/KCL_2023-2027_PhD/FMEM_QuantiativeGenetics_Project/PhD_Project_Contents/R_code/Functional_simulation/simulation_data/TC_fixed_effect.Rdata")
+load("TC_fixed_effect.Rdata")
 f_true7 <- convert_to_basisfunctions(timefine, fixed_effect, t7)
 f_true14 <- convert_to_basisfunctions(timefine, fixed_effect, t14)
 
