@@ -551,10 +551,13 @@ abline(h=0, lty = "dashed")
 
 ## Selection to response
 
-eigenval1 <- eigen(CG_funL)$values[1]
-deltaY <- eigenval1 * eigenfunL_CG1
-Y_newgen <- aligned_logmass_mean + deltaY
-
+eigenval1 <- eigen(CG_funL)$values[1] # 1.352322
+eigenval2 <- eigen(CG_funL)$values[2] # 0.04941301
+deltaY1 <- eigenval1 * eigenfunL_CG1
+deltaY2 <- eigenval2 * eigenfunL_CG2
+Y_newgen1 <- aligned_logmass_mean + deltaY1
+Y_newgen2 <- aligned_logmass_mean + deltaY2
+                       
 par(mfrow = c(1,1))
 par(mar = c(5, 6, 4, 2) + 0.1)
 plot(c(0,1), c(0, 3), type = "n", 
@@ -567,7 +570,25 @@ axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0)
 axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
 grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
 lines(timefine, aligned_logmass_mean, type = "l", lty = "solid", col = "red")
-lines(timefine, Y_newgen, type = "l", lty = "dashed", col = "black")
+lines(timefine, Y_newgen1, type = "l", lty = "dashed", col = "black")
 legend("bottomright", legend= c("Mean: current generation", "Mean: next generation"), lty = c("solid", "dashed"), bty = "n", col = c("red","black"))
+mtext("Response to Seletction (1st Eigenfunction)", side = 3, adj = 0, line = 1, font = 2)
+abline(v=0)
+abline(h = 0)
+
+par(mar = c(5, 6, 4, 2) + 0.1)
+plot(c(0,1), c(0, 3), type = "n", 
+     xlab = "Time", 
+     ylab = expression(Log(Mass,~10^-5~g)),
+     xlim = c(0, 1), ylim = c(0,3), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+lines(timefine, aligned_logmass_mean, type = "l", lty = "solid", col = "red")
+lines(timefine, Y_newgen2, type = "l", lty = "dashed", col = "black")
+legend("bottomright", legend= c("Mean: current generation", "Mean: next generation"), lty = c("solid", "dashed"), bty = "n", col = c("red","black"))
+mtext("Response to Seletction (2nd Eigenfunction)", side = 3, adj = 0, line = 1, font = 2)
 abline(v=0)
 abline(h = 0)
