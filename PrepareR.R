@@ -53,7 +53,8 @@ fit_genetic_fmm <- function(formula, data, A, nbasis, control = lmerControl()) {
   #' @param data a data frame containing the variables named in formula.
   #' @param A a sparse matrix: an additive genetic relationship matrix 
   #' which models the genetic relationship in the dataset.
-  #' @param nbasis numeber: number of basis used to fit the random effects
+  #' @param nbasis numeber/vector: number of basis used to fit the random effects 
+  #'        [basis for genetic, no. of basis for environment]
   #' @param control lmerControl object: control parameters for the optimizer.
   #' @return returns a fitted mixed-effect model
   
@@ -63,17 +64,18 @@ fit_genetic_fmm <- function(formula, data, A, nbasis, control = lmerControl()) {
   
   # Cholesky decomposition of A
   LA <- as(t(chol(A)), "sparseMatrix")
-  I_p <- as(diag(nbasis), "sparseMatrix")
+  if (length(nbasis) == 1){
+    I_p <- as(diag(nbasis), "sparseMatrix")
+  }
+  else{I_p <- as(diag(nbasis[1]), "sparseMatrix")}
   MA <- kronecker(LA, I_p) # used to update the genetic design matrix Z_G = ZM
   
   # Define the mixed-model formula
   fmmParsedForm <- lFormula(formula=formula, data = data, control = control)
   
   # Compute the random-effect matrix
-  Z_pre <- t(fmmParsedForm$reTrms$Zt)
-  ZE <- Z_pre[, 1:dim(MA)[1]] # environmental random-effect matrix
-  ZG <- Z_pre[, 1:dim(MA)[1]] %*% MA # update the genetic-random effect matrix
-  Z <- cbind(ZG, ZE) # the updated random effect design matrix
+  Z <- t(fmmParsedForm$reTrms$Zt)
+  Z[,1:dim(MA)[1]] <- Z[, 1:dim(MA)[1]] %*% MA # update the genetic-random effect matrix
   
   # Modularisation
   fmmParsedForm$reTrms$Zt <- t(Z) # Update Z in the reTrms term
@@ -86,3 +88,4 @@ fit_genetic_fmm <- function(formula, data, A, nbasis, control = lmerControl()) {
   
   return(fmm)
 }
+
