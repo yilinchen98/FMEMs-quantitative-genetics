@@ -1,6 +1,17 @@
 # Bootstrap TC data
 ## Use original scale
 
+## load packages 
+library(Matrix)
+library(MASS)
+library(fda)
+library(lme4)
+library(fdasrvf)
+library(pedigreemm)
+library(mvnfast)
+library(ggplot2)
+library(fBasics)
+
 ## load functions
 fit_genetic_fmm <- function(formula, data, A, nbasis, control = lmerControl()) {
   #' This function uses the lme4 package to fit a linear mixed-effect model to genetic data, 
