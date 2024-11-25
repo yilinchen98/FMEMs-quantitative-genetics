@@ -1,8 +1,3 @@
-library(fdasrvf)
-library(pedigreemm)
-library(lme4)
-library(Matrix)
-
 # Import data
 TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
