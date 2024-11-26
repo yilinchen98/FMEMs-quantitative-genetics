@@ -32,7 +32,7 @@ df$x_rescaled <- unsplit(age_list_new,id)
 df$logtrait <- log10(df$trait)
 log_trait_list <- split(df$logtrait,id)
 
-## plot growth curve
+## Plot growth curves
 par(mar = c(5, 6, 4, 2) + 0.1)
 plot(c(1, 25), c(0, 400), type = "n", 
      xlab = "Days", 
@@ -46,8 +46,25 @@ grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
 for (i in 1:N){
   lines(age_list[[i]], trait_list[[i]], type = "l", col = i)
 }
+mtext("Growth Curves", side = 3, adj = 0, line = 1, font = 2)
 abline(h = 0, v=0)
 
+## Plot log growth curves
+par(mar = c(5, 6, 4, 2) + 0.1)
+plot(c(1, 25), c(0, 3), type = "n", 
+     xlab = "Days", 
+     ylab = expression(Log(Mass,~10^-5~g)),
+     xlim = c(0, 25), ylim = c(0, 3), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+axis(side = 1, at = seq(0, 25, by = 5), pos = 0) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+for (i in 1:N){
+  lines(age_list[[i]], log_trait_list[[i]], type = "l", col = i)
+}
+mtext("Log Growth Curves", side = 3, adj = 0, line = 1, font = 2)
+abline(h = 0, v=0)
 ########################################################################################
 
 ## Problem with smoothing
