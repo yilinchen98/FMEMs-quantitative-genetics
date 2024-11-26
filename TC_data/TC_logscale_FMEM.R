@@ -5,7 +5,7 @@ TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4)
 
-## calculate genetic relationship matrix
+## Calculate genetic relationship matrix
 id <- df$id
 FirstUniqueIdPos <- which(duplicated(id) == FALSE)
 pos = id[FirstUniqueIdPos] # extract ids for all subjects
@@ -16,12 +16,15 @@ pede <- editPed(sire = sire_id, dam = dam_id, label = pos)
 ped<- with(pede, pedigree(label=label, sire=sire, dam=dam))
 A <- getA(ped)[163:1035,163:1035]
 
-## Rescale time interval to [0,1]
+## Transform to the log scale
 N = length(FirstUniqueIdPos) # N = 873 subjects
 n = length(id) # n = 6860 observations
 age_list <- split(df$x,id)
 trait_list <- split(df$trait,id)
+df$logtrait <- log10(df$trait)
+log_trait_list <- split(df$logtrait,id)
 
+## Rescale time interval to [0,1]
 ### x = (x -min(x))/(max(x) - min(x))
 age_list_new <- list()
 for (i in 1:N){
@@ -29,8 +32,7 @@ for (i in 1:N){
 }
 
 df$x_rescaled <- unsplit(age_list_new,id)
-df$logtrait <- log10(df$trait)
-log_trait_list <- split(df$logtrait,id)
+
 
 ## Plot growth curves
 par(mar = c(5, 6, 4, 2) + 0.1)
