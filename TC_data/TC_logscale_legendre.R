@@ -1,7 +1,8 @@
-# We repeated Irwin and Carter (2013) estimation for TC covariance functions.
-# Here, we fit the genetic FEME for raw data with orthogonal Legendre polynomials as basis functions. 
+# We repeat Irwin and Carter (2013) estimation for TC covariance functions.
+# Here we fit the genetic FEME for raw data with orthogonal Legendre polynomials as basis functions. 
 
 ## Load Data
+setwd("D:/KCL_2023-2027_PhD/FMEM_QuantitativeGenetics_Project/PhD_Project_Contents/R_code/TC_data")
 TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4)
@@ -392,7 +393,7 @@ fig_RR2
 
 P_funLeg2 <- CG_funLeg2 + CE_funLeg2
 fig5 <- plot_ly(showscale = FALSE, scene='scene2') 
-fig5 <- fig5 %>% add_surface(z = ~P_funLeg2, x= timefine, y = timefine)
+fig5 <- fig5 %>% add_surface(z = ~P_funLeg2, x= timegrid, y = timegrid)
 
 fig_RR3 <- subplot(fig5, fig3) 
 fig_RR3 <- fig_RR3 %>% layout(title = "",
