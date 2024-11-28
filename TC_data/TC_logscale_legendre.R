@@ -18,11 +18,15 @@ pede <- editPed(sire = sire_id, dam = dam_id, label = pos)
 ped<- with(pede, pedigree(label=label, sire=sire, dam=dam))
 A <- getA(ped)[163:1035,163:1035]
 
+## Transform to log scale
 N = length(FirstUniqueIdPos) # N = 873 subjects
 n = length(id) # n = 6860 observations
 age_list <- split(df$x,id)
 trait_list <- split(df$trait,id)
+df$logtrait <- log10(df$trait)
+log_trait_list <- split(df$logtrait,id)
 
+## Scale time
 ### x = (x -min(x))/(max(x) - min(x)) scale time between [0,1]
 age_list_new <- list()
 for (i in 1:N){
@@ -32,8 +36,6 @@ for (i in 1:N){
 ## Rescale time interval to [-1,1]
 df$x_new <-  df$x*(1/13)-1
 x_new <- split(df$x_new, id)
-df$logtrait <- log10(df$trait)
-log_trait_list <- split(df$logtrait,id)
 
 par(mfrow = c(1,1))
 par(mar = c(5, 6, 4, 2) + 0.1, font.main = 1)
@@ -406,6 +408,150 @@ fig_RR3 <- fig_RR3 %>% layout(title = "",
                                            xaxis=list(title = "Time"),
                                            yaxis =list(title = "Time"),
                                            zaxis=list(range = c(-0.09, 0.7),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
+                                           aspectmode='cube'))
+
+fig_RR3
+
+##################################################################################
+## Fit 3rd-order for genetic and 2nd-order for environmental with time scales
+## all start from -1 and end at 1
+
+## Resale time s.t. all starts at -1 and ends at 1
+x1 <- list()
+for (i in 1:N){
+  x1[[i]] = 2*(age_list[[i]]-min(age_list[[i]]))/(max(age_list[[i]])-min(age_list[[i]])) -1 
+}
+
+legendre_polys3 <- legendre.polynomials(n = 3, normalized = FALSE)
+legBasis3_new <- list() # 3rd order polynomial (non-normalised)
+for (i in 1:N){
+  values <- polynomial.values(polynomials = legendre_polys3, x = x1[[i]])
+  legBasis3_new[[i]] <- do.call(cbind, values)
+}
+basis_new <- do.call(rbind, legBasis3_new)
+
+par(mfrow = c(1,2))
+plot(c(-1,1), c(-2,2), type = "n",
+     xlab = "Time", 
+     ylab = "",
+     xlim = c(-1, 1), ylim = c(-2, 2), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE)
+axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0) 
+axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0) 
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+for (i in 1:4){
+  lines(x1[[1]], legBasis3_new[[1]][,i], col = i)
+}
+mtext("Orthogonal Legendre Poly of order 3 (Subject 1)", side = 3, adj = 0, line = 1, font = 2)
+abline(h = 0, v=0)
+
+plot(c(-1,1), c(-2,2), type = "n",
+     xlab = "Time", 
+     ylab = "",
+     xlim = c(-1, 1), ylim = c(-2, 2), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE)
+axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0) 
+axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0) 
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+for (i in 1:4){
+  lines(x1[[2]], legBasis3_new[[2]][,i], col = i)
+}
+mtext("Orthogonal Legendre Poly of order 3 (Subject 2)", side = 3, adj = 0, line = 1, font = 2)
+abline(h = 0, v=0)
+################################################################################################
+
+df_leg_new <-  data.frame(id = id, 
+                      trait = df$logtrait, 
+                      phi1 = basis_new[,1],
+                      phi2 = basis_new[,2],
+                      phi3 = basis_new[,3],
+                      phi4 = basis_new[,4])
+
+fformLegendre3 <- trait ~ -1 + df_leg_new$phi1 + df_leg_new$phi2 + df_leg_new$phi3 + df_leg_new$phi4 +
+  (-1 + df_leg_new$phi1 + df_leg_new$phi2 + df_leg_new$phi3 + df_leg_new$phi4 | df_leg_new$id) + 
+  (-1 + df_leg_new$phi1 + df_leg_new$phi2 + df_leg_new$phi3  | df_leg_new$id)
+
+system.time(
+  ffLeg_new <- fit_genetic_fmm(fformLegendre3, df_leg_new, A, c(4,3))
+) # user   system  elapsed
+
+isSingular(ffLeg_new)
+summary(ffLeg_new)
+
+## Model results
+### Fixed effect
+logFPCA_new <- FPCA(Ly = log_trait_list, Lt = x1, optns = list(nRegGrid = 100)) # FPCA through conditional expectation
+timegrid_new <- logFPCA_new$workGrid
+sample_mean_new <- logFPCA_new$mu
+
+valuesfine_new <- polynomial.values(polynomials = legendre_polys3, x = timegrid_new)
+basisfine_new <- do.call(cbind, valuesfine_new)
+beta_leg_new <- fixef(ffLeg_new)
+FE_leg_new <- basisfine_new %*% beta_leg_new
+
+par(mfrow = c(1,1))
+par(font.main = 1)
+plot(c(-1,1), c(0, 3), type = "n", 
+     xlab = "Time", 
+     ylab = "",
+     xlim = c(-1, 1), ylim = c(0,3), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
+grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+lines(timegrid_new, FE_leg_new, type = "l", lty = "dashed", cpl = "black")
+lines(timegrid_new, sample_mean_new, type = "l", col = "red")
+mtext("Fixed Effect", side = 3, adj = 0, line = 1, font = 2)
+abline(h = 0, v=0)
+legend("bottomright", legend= c("estimated FE", "sample mean"), lty = c("dashed", "solid"), bty = "n", col = c("black", "red"))
+
+### Random effect
+vcLeg_new <- VarCorr(ffLeg_new)
+CGLeg_new <- vcLeg_new[["df_leg_new.id"]] # genetic covariance
+CELeg_new <- vcLeg_new[["df_leg_new.id.1"]] # environmental covariance
+
+CG_funLeg_new <- basisfine_new%*% CGLeg_new %*% t(basisfine_new) # estimated gen cov function
+CE_funLeg_new <- basisfine_new[,1:3] %*% CELeg_new %*% t(basisfine_new[,1:3]) # estimated env cov function
+
+fig3 <- plot_ly(showscale=FALSE, scene='scene1') 
+fig3 <- fig3 %>% add_surface(z = ~CG_funLeg_new, x = timegrid_new, y = timegrid_new)
+
+fig4 <- plot_ly(showscale = FALSE, scene='scene2') 
+fig4 <- fig4 %>% add_surface(z = ~CE_funLeg_new, x= timegrid_new, y = timegrid_new)
+
+fig_RR2 <- subplot(fig3, fig4) 
+fig_RR2 <- fig_RR2 %>% layout(scene = list(title = "",
+                                           domain=list(x=c(0,0.45),y=c(0.25,1)),
+                                           xaxis=list(title = "Time"),
+                                           yaxis =list(title = "Time") , 
+                                           zaxis=list(range = c(-0.01, 0.1),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
+                                           aspectmode='cube'),
+                              scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
+                                            xaxis=list(title = "Time"),
+                                            yaxis =list(title = "Time"),
+                                            zaxis=list(range = c(-0.001, 0.01), title = "Environmental Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
+                                            aspectmode='cube'))
+
+fig_RR2
+
+P_funLeg_new <- CG_funLeg_new + CE_funLeg_new
+fig5 <- plot_ly(showscale = FALSE, scene='scene2') 
+fig5 <- fig5 %>% add_surface(z = ~P_funLeg_new, x= timegrid_new, y = timegrid_new)
+
+fig_RR3 <- subplot(fig5, fig3) 
+fig_RR3 <- fig_RR3 %>% layout(title = "",
+                              scene2 = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
+                                            xaxis=list(title = "Time"),
+                                            yaxis =list(title = "Time") , 
+                                            zaxis=list(range = c(-0.01, 0.1),title = "Phenotypic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
+                                            aspectmode='cube'),
+                              scene = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
+                                           xaxis=list(title = "Time"),
+                                           yaxis =list(title = "Time"),
+                                           zaxis=list(range = c(-0.01, 0.1),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'))
 
 fig_RR3
