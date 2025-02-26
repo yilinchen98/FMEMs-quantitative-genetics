@@ -1,8 +1,6 @@
 # We fit the TC growth data without alignment
 
 ## load data
-
-setwd("D:/KCL_2023-2027_PhD/Genetics_FMEM_Project/FMEMs-quantitative-genetics/R_code/TC_data")
 TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4)
