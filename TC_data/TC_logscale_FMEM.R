@@ -256,7 +256,7 @@ axis(side = 2, at = seq(-0.1, 0.2, by = 0.05), pos = 0, lwd = 2)
 
 par(font.main = 1)
 plot(c(0,1), c(0, 1), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(0, 1), ylim = c(-0.1,0.2), 
      xaxs = "i", yaxs = "i",
