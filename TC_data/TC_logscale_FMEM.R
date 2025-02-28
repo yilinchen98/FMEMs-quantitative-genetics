@@ -110,7 +110,7 @@ create_subject_plot <- function(subject_index) {
   # Original data plot
   p_original <- ggplot(original_df[original_df$Subject == subject, ], aes(x = Time, y = Mass)) +
     geom_point(color = "black") +
-    labs(x = "Time", y =expression(Mass~(10^-5~g)), title = paste("Subject", subject)) +
+    labs(x = "Standardised Time", y =expression(Mass~(10^-5~g)), title = paste("Subject", subject)) +
     theme_minimal()
   
   # Smoothed mass plot
