@@ -1,12 +1,6 @@
 # Bootstrap Simulations for TC dataset
 
 ## load data
-files <- list.files(pattern = "\\.Rdata$")
-
-for (file in files) {
-  load(file)
-}
-
 TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4)
@@ -206,7 +200,7 @@ lines(timefine, mean_GEL1 + GeigenL1_sup1, lty = "dashed")
 lines(timefine, mean_GEL1 - GeigenL1_sup1, lty = "dashed")
 lines(timefine, eigenfun1_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 1 (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 plot(c(0,1), c(-0.25,0.1), type = "n", xlab = "Time", ylab = "")
 lines(timefine, mean_EEL1, lty = "solid")
@@ -214,7 +208,7 @@ lines(timefine, mean_EEL1 + EeigenL1_sup1, lty = "dashed")
 lines(timefine, mean_EEL1 - EeigenL1_sup1, lty = "dashed")
 lines(timefine, eigenfun1_CEfunL, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction 1 (log Scale)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 
 plot(c(0,1), c(-0.15,0.2), type = "n", xlab = "Time", ylab = "")
@@ -223,7 +217,7 @@ lines(timefine, mean_GEL2 + GeigenL2_sup2, lty = "dashed")
 lines(timefine, mean_GEL2 - GeigenL2_sup2, lty = "dashed")
 lines(timefine, eigenfun2_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 2 (log Scale)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 plot(c(0,1), c(-0.15,0.2), type = "n", xlab = "Time", ylab = "")
 lines(timefine, mean_EEL2, lty = "solid")
@@ -231,9 +225,7 @@ lines(timefine, mean_EEL2 + EeigenL2_sup2, lty = "dashed")
 lines(timefine, mean_EEL2 - EeigenL2_sup2, lty = "dashed")
 lines(timefine, eigenfun2_CEfunL, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction 2 (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
-
-
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 #######################################################################
 
 ## Covariance functions
