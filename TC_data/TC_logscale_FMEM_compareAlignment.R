@@ -1,4 +1,4 @@
-# We fit the TC growth data without alignment
+# We fit the misaligned data and compare results from fitting aligned curves
 
 ## load data
 TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
@@ -31,22 +31,6 @@ for (i in 1:N){
 df$x_rescaled <- unsplit(age_list_new,id)
 df$logtrait <- log10(df$trait)
 log_trait_list <- split(df$logtrait,id)
-
-## plot oringinal growth curve
-par(mar = c(5, 6, 4, 2) + 0.1)
-plot(c(1, 25), c(0, 400), type = "n", 
-     xlab = "Days", 
-     ylab = expression(Mass~(10^-5~g)),
-     xlim = c(0, 25), ylim = c(0, 400), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 25, by = 5), pos = 0) 
-axis(side = 2, at = seq(0, 400, by = 100), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-for (i in 1:N){
-  lines(age_list[[i]], trait_list[[i]], type = "l", col = i)
-}
-abline(h = 0, v=0)
 #########################################################################################
 
 ## Data smoothing, set smoothing parameter <= 1e-4
@@ -71,86 +55,16 @@ for (i in 1:N) {
   pred_mass_fine[,i] <- 10^(predict(ss_logmass, timefine)$y) ## predict smoothed data on a regular dense grid
   lam[i] <- ss_logmass$lambda
 }
-
-## plot raw log growth curves vs plot smoothed log growth curves
-par(mfrow = c(1,2))
-par(mar = c(5, 6, 4, 2) + 0.1)
-plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
-     ylab = expression(Log(Mass,~10^-5~g)),
-     xlim = c(0, 1), ylim = c(0,3), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-for (i in 1:N){
-  lines(age_list_new[[i]], log10(trait_list[[i]]), type = "l", col = i)
-}
-abline(h = 0, v=0)
-mtext("Unsmoothed Log Growth Cruves", side = 3, adj = 0, line = 1, font = 2)
-
-par(mar = c(5, 6, 4, 2) + 0.1)
-plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
-     ylab = expression(Log(Mass,~10^-5~g)),
-     xlim = c(0, 1), ylim = c(0,3), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-for (i in 1:N){
-  lines(timefine, pred_logmass_fine[,i], type = "l", col = i)
-}
-abline(h = 0, v=0)
-mtext("Smoothed Log Growth Cruves", side = 3, adj = 0, line = 1, font = 2)
-
 #######################################################################################################
 
-## Compare with registered curves
+## Curve alignment
 aligned_logmass_process <- time_warping(pred_logmass_fine, timefine)
 aligned_logmass_curve <- aligned_logmass_process$fn
 aligned_logmass_mean <- aligned_logmass_process$fmean
 warping_logmass_funs <- aligned_logmass_process$warping_functions
-
-## plot raw log growth curves vs plot smoothed registered log growth curves
-par(mfrow = c(1,2))
-par(mar = c(5, 6, 4, 2) + 0.1)
-plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
-     ylab = expression(Log(Mass,~10^-5~g)),
-     xlim = c(0, 1), ylim = c(0,3), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-for (i in 1:N){
-  lines(age_list_new[[i]], log10(trait_list[[i]]), type = "l", col = i)
-}
-abline(h = 0, v=0)
-mtext("Unsmoothed Log Growth Cruves", side = 3, adj = 0, line = 1, font = 2)
-
-par(mar = c(5, 6, 4, 2) + 0.1)
-plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
-     ylab = expression(Log(Mass,~10^-5~g)),
-     xlim = c(0, 1), ylim = c(0,3), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-for (i in 1:N){
-  lines(timefine, aligned_logmass_curve[,i], type = "l", col = i)
-}
-abline(h = 0, v=0)
-mtext("Smoothed Registered Log Growth Cruves", side = 3, adj = 0, line = 1, font = 2)
-
 ####################################################################################
 
-## Register unsmoothed curves
+## Register Raw curves
 
 aligned_logtrait <- list()
 gamma_logmass <- list()
@@ -159,41 +73,6 @@ for (i in 1:N){
   gamma_logmass[[i]] <- gamma_logmass_inter
   aligned_logtrait[[i]] <- warp_f_gamma(log10(trait_list[[i]]), age_list_new[[i]], gamma_logmass_inter)
 }
-
-## plot raw log growth curves vs plot smoothed registered log growth curves
-par(mfrow = c(1,2))
-par(mar = c(5, 6, 4, 2) + 0.1)
-plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
-     ylab = expression(Log(Mass,~10^-5~g)),
-     xlim = c(0, 1), ylim = c(0,3), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-for (i in 1:N){
-  lines(age_list_new[[i]], log10(trait_list[[i]]), type = "l", col = i)
-}
-abline(h = 0, v=0)
-mtext("Unsmoothed Unregistered Log Growth Cruves", side = 3, adj = 0, line = 1, font = 2)
-
-par(mar = c(5, 6, 4, 2) + 0.1)
-plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
-     ylab = expression(Log(Mass,~10^-5~g)),
-     xlim = c(0, 1), ylim = c(0,3), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-for (i in 1:N){
-  lines(age_list_new[[i]], aligned_logtrait[[i]], type = "l", col = i)
-}
-abline(h = 0, v=0)
-mtext("Unsmoothed Registered Log Growth Cruves", side = 3, adj = 0, line = 1, font = 2)
-
 ###########################################################################################
 
 ## Compare sample covariance for registered and unregistered curvevs
@@ -213,96 +92,89 @@ fig2 <- fig2 %>% add_surface(z = ~cov_sam_registered, x= timefine, y = timefine)
 fig_RR <- subplot(fig1, fig2) 
 fig_RR <- fig_RR %>% layout(scene = list(title = "",
                                            domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time") , 
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time") , 
                                            zaxis=list(range=c(-0.001,0.1),title = "Oringial (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
                               scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time"),
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time"),
                                             zaxis=list(range=c(-0.001,0.1),title = "Aligned Raw (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'))
 
 fig_RR
-
-
 #########################################################################################
 
 
-## FPCA
-
+## FPCA of Non-aligned curves
 fpcaobj_lg <- prcomp(t(pred_logmass_fine), rank. = 8)
 pcs_lg <- fpcaobj_lg$rotation
 par(mfrow = c(1,1))
 pcl <- fviz_eig(fpcaobj_lg, 
                 addlabels = TRUE, 
-                main="", ncp = 10)
+                main="Misaligned Data", ncp = 10)
 pcl
 
 par(mfrow = c(2, 1))
 par(font.main = 1)
 plot(c(0,1), c(0, 1), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(0, 1), ylim = c(-0.2,0.2), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-0.2, 0.25, by = 0.05), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timefine, pcs_lg[,1], type = "l", col = i)
 }
 mtext("Principal Component 1 for Non-aligned Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.2, 0.25, by = 0.05), pos = 0, lwd = 2) 
 
 par(font.main = 1)
 plot(c(0,1), c(0, 1), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(0, 1), ylim = c(-0.2,0.25), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-0.2, 0.25, by = 0.05), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timefine, pcs_lg[,2], type = "l", col = i)
 }
 mtext("Principal Component 2 for Non-aligned Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.2, 0.25, by = 0.05), pos = 0, lwd = 2) 
 
 par(font.main = 1)
 plot(c(0,1), c(0, 1), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(0, 1), ylim = c(-0.2,0.25), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-0.2, 0.25, by = 0.05), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timefine, pcs_lg[,3], type = "l", col = i)
 }
 mtext("Principal Component 3 for Non-aligned Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.2, 0.25, by = 0.05), pos = 0, lwd = 2) 
 
 par(font.main = 1)
 plot(c(0,1), c(0, 1), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(0, 1), ylim = c(-0.2,0.25), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-0.2, 0.25, by = 0.05), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timefine, pcs_lg[,4], type = "l", col = i)
 }
 mtext("Principal Component 4 for Non-aligned Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.2, 0.25, by = 0.05), pos = 0, lwd = 2) 
 ###############################################################################################
 
 ## Model fitting: fit original data
@@ -345,21 +217,21 @@ smoothed_mean <- rowMeans(pred_logmass_fine)
 betalg <- fixef(fflg)
 feflg <- pcs_lg %*% betalg
 
-df_FElg <- data.frame(
-  Time = rep(timefine, 2),
-  Value = c(smoothed_mean, feflg),
-  FE = rep(c("mean", "estimated fixed effect"), each = length(timefine))
-)
-
-pfelg <- ggplot(df_FElg, aes(x = Time, y = Value, linetype = FE, color = FE)) +
-  geom_line() +  
-  labs(x = "Time", y = expression(Log(Mass,~10^-5~g)), title = "") +
-  scale_color_manual(values = c("mean" = "red", "estimated fixed effect" = "black")) +  # Assign colors to lines
-  scale_linetype_manual(values = c("mean" = "solid", "estimated fixed effect" = "dashed")) +  # Assign line types
-  theme_minimal() +
-  theme(legend.position = c(0.8,0.2))
-pfelg
-#ggsave("FElogmass.png", plot = pfe, width = 6, height = 3, dpi = 300)
+par(mfrow = c(1,1))
+par(mar = c(5, 6, 4, 2) + 0.1)
+plot(c(0,1), c(0, 3), type = "n", 
+     xlab = "Standardised Time", 
+     ylab = expression(Log(Mass,~10^-5~g)),
+     xlim = c(0, 1), ylim = c(0,3), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
+lines(timefine, feflg, type = "l", col = "black")
+lines(timefine, smoothed_mean, type = "l", col = "red")
+mtext("Fixed Effect", side = 3, adj = 0, line = 1, font = 2)
+legend("bottomright", legend= c("Estimated FE", "Mean"), lty = c("solid", "dashed"), bty = "n", col = c("black","red"))
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 
 ## Random effects
 vclg <- VarCorr(fflg)
@@ -378,13 +250,13 @@ fig4 <- fig4 %>% add_surface(z = ~CE_funlg, x= timefine, y = timefine)
 fig_RR2 <- subplot(fig3, fig4) 
 fig_RR2 <- fig_RR2 %>% layout(scene = list(title = "",
                                            domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time") , 
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time") , 
                                            zaxis=list(range=c(-0.001,0.1),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
                               scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time"),
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time"),
                                             zaxis=list(range=c(-0.001,0.01),title = "Environmental Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'))
 
@@ -397,23 +269,61 @@ fig5 <- fig5 %>% add_surface(z = ~P_funlg, x= timefine, y = timefine)
 fig_RR3 <- subplot(fig5, fig3) 
 fig_RR3 <- fig_RR3 %>% layout(title = "",
                               scene2 = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time") , 
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time") , 
                                             zaxis=list(range=c(-0.001,0.1),title = "Phenotypic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'),
                               scene = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time"),
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time"),
                                            zaxis=list(range=c(-0.001,0.1),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'))
 
 fig_RR3
 ################################################################################################################################
 
-## FPCA of alinged smoothed curves
+## FPCA of aligned smoothed curves
 
 fpcaobj_logmass <- prcomp(x=t(aligned_logmass_curve), retx = TRUE, center = TRUE, rank. = 3)
 pcs_logmass <- fpcaobj_logmass$rotation # eigen vectors
+
+par(mfrow = c(1,1))
+pl <- fviz_eig(fpcaobj_logmass, 
+               addlabels = TRUE, 
+               main="Aligned Data", ncp = 6)
+pl
+
+par(mfrow = c(2, 1))
+par(font.main = 1)
+plot(c(0,1), c(0, 1), type = "n", 
+     xlab = "Standardised Time", 
+     ylab = "",
+     xlim = c(0, 1), ylim = c(-0.1,0.2), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
+for (i in 1:N){
+  lines(timefine, pcs_logmass[,1], type = "l", col = i)
+}
+mtext("Principal Component 1 of Aligned Curves", side = 3, adj = 0, line = 1, font = 2)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.1, 0.2, by = 0.05), pos = 0, lwd = 2) 
+
+par(font.main = 1)
+plot(c(0,1), c(0, 1), type = "n", 
+     xlab = "Standardised Time", 
+     ylab = "",
+     xlim = c(0, 1), ylim = c(-0.1,0.2), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
+for (i in 1:N){
+  lines(timefine, pcs_logmass[,2], type = "l", col = i)
+}
+mtext("Principal Component 2 of Aligned Curves", side = 3, adj = 0, line = 1, font = 2)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.1, 0.2, by = 0.05), pos = 0, lwd =2 )
+################################################################################
 
 ## Model Fitting (aligned raw data at Log scale)
 
@@ -451,20 +361,21 @@ isSingular(ffL) # original tol = 1e-4
 betaL <- fixef(ffL)
 fefL <- pcs_logmass %*% betaL
 
-df_FE <- data.frame(
-  Time = rep(timefine, 2),
-  Value = c(aligned_logmass_mean, fefL),
-  FE = rep(c("mean", "estimated fixed effect"), each = length(timefine))
-)
-
-pfe <- ggplot(df_FE, aes(x = Time, y = Value, linetype = FE, color = FE)) +
-  geom_line() +  
-  labs(x = "Time", y = expression(Log(Mass,~10^-5~g)), title = "") +
-  scale_color_manual(values = c("mean" = "red", "estimated fixed effect" = "black")) +  # Assign colors to lines
-  scale_linetype_manual(values = c("mean" = "solid", "estimated fixed effect" = "dashed")) +  # Assign line types
-  theme_minimal() +
-  theme(legend.position = c(0.8,0.2))
-pfe
+par(mfrow = c(1,1))
+par(mar = c(5, 6, 4, 2) + 0.1)
+plot(c(0,1), c(0, 3), type = "n", 
+     xlab = "Standardised Time", 
+     ylab = expression(Log(Mass,~10^-5~g)),
+     xlim = c(0, 1), ylim = c(0,3), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
+lines(timefine, fefL, type = "l", col = "black")
+lines(timefine, aligned_logmass_mean, type = "l", col = "red")
+mtext("Fixed Effect", side = 3, adj = 0, line = 1, font = 2)
+legend("bottomright", legend= c("Estimated FE", "Mean"), lty = c("solid", "dashed"), bty = "n", col = c("black","red"))
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 
 ## Random effects
 vcL <- VarCorr(ffL)
@@ -485,13 +396,13 @@ fig_arawP <- fig_arawP %>% add_surface(z = ~P_funL, x= timefine, y = timefine)
 fig_P <- subplot(fig_rawP, fig_arawP) 
 fig_P <- fig_P %>% layout(scene = list(title = "",
                                            domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time") , 
-                                           zaxis=list(range=c(-0.001,0.1),title = "Phenotypic Original (Log(Mass, 10<sup>-5</sup> g/t))"),
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time") , 
+                                           zaxis=list(range=c(-0.001,0.1),title = "Phenotypic Misaligned (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
                               scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time"),
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time"),
                                             zaxis=list(range=c(-0.001,0.1),title = "Phenotypic Aligned (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'))
 fig_P
