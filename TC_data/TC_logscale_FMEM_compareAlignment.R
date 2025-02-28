@@ -127,7 +127,7 @@ grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timefine, pcs_lg[,1], type = "l", col = i)
 }
-mtext("Principal Component 1 for Non-aligned Curves", side = 3, adj = 0, line = 1, font = 2)
+mtext("Principal Component 1 for Misaligned Curves", side = 3, adj = 0, line = 1, font = 2)
 axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
 axis(side = 2, at = seq(-0.2, 0.25, by = 0.05), pos = 0, lwd = 2) 
 
@@ -142,7 +142,7 @@ grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timefine, pcs_lg[,2], type = "l", col = i)
 }
-mtext("Principal Component 2 for Non-aligned Curves", side = 3, adj = 0, line = 1, font = 2)
+mtext("Principal Component 2 for Misaligned Curves", side = 3, adj = 0, line = 1, font = 2)
 axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
 axis(side = 2, at = seq(-0.2, 0.25, by = 0.05), pos = 0, lwd = 2) 
 
