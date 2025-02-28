@@ -199,7 +199,7 @@ par(mfrow = c(1, 2))
 par(mar = c(5, 6, 4, 2) + 0.1, font.main = 1)
 plot(c(0,1), c(0, 1), type = "n", 
      xlab = "Standardised Time", 
-     ylab = "Warping Functions",
+     ylab = "",
      xlim = c(0, 1), ylim = c(0,1), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
@@ -285,7 +285,7 @@ par(mfrow = c(1, 2))
 par(mar = c(5, 6, 4, 2) + 0.1, font.main = 1)
 plot(c(0,1), c(0, 1), type = "n", 
      xlab = "Standardised Time", 
-     ylab = "Warping Functions",
+     ylab = "",
      xlim = c(0, 1), ylim = c(0,1), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
@@ -299,7 +299,7 @@ axis(side = 2, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2)
 
 plot(c(0,1), c(0, 3), type = "n", 
      xlab = "Standardised Time", 
-     ylab = expression(Mass~(10^-5~g)),
+     ylab = expression(Log(Mass,~10^-5~g)),
      xlim = c(0, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
@@ -382,13 +382,13 @@ fig4 <- fig4 %>% add_surface(z = ~CE_funL, x= timefine, y = timefine)
 fig_RR2 <- subplot(fig3, fig4) 
 fig_RR2 <- fig_RR2 %>% layout(scene = list(title = "",
                                            domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time") , 
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time") , 
                                            zaxis=list(range=c(-0.001,0.1),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
                               scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time"),
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time"),
                                             zaxis=list(range=c(-0.001,0.01),title = "Environmental Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'))
 
@@ -401,13 +401,13 @@ fig5 <- fig5 %>% add_surface(z = ~P_funL, x= timefine, y = timefine)
 fig_RR3 <- subplot(fig5, fig3) 
 fig_RR3 <- fig_RR3 %>% layout(title = "",
                               scene2 = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time") , 
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time") , 
                                            zaxis=list(range=c(-0.001,0.1),title = "Phenotypic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
                               scene = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time"),
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time"),
                                             zaxis=list(range=c(-0.001,0.1),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'))
 
@@ -446,18 +446,18 @@ fig_sam3 <- fig_sam3 %>% add_surface(z = ~P_funL, x = timefine, y = timefine)
 fig_sam <- subplot(fig_sam1, fig_sam2, fig_sam3)
 fig_sam <- fig_sam %>% layout(scene = list(title = "",
                                            domain=list(x=c(0,0.32),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time") , 
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time") , 
                                            zaxis=list(range=c(-0.001,0.1),title = "Sample Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
                               scene2 = list(domain=list(x=c(0.33,0.65),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time"),
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time"),
                                             zaxis=list(range = c(-0.001, 0.1),title = "Smooth Sample Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'),
                               scene3 = list(domain=list(x=c(0.66,1),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time"),
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time"),
                                             zaxis=list(range = c(-0.001, 0.1),title = "Phenotypic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'))
 fig_sam
@@ -541,3 +541,4 @@ legend("bottomright", legend= c("Mean: current generation", "Mean: next generati
 mtext("Response to Seletction (2nd Eigenfunction)", side = 3, adj = 0, line = 1, font = 2)
 axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
 axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
+
