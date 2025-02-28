@@ -2,7 +2,6 @@
 # Here we fit the genetic FEME for raw data with orthogonal Legendre polynomials as basis functions. 
 
 ## Load Data
-setwd("D:/KCL_2023-2027_PhD/FMEM_QuantitativeGenetics_Project/PhD_Project_Contents/R_code/TC_data")
 TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4)
