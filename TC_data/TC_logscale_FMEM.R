@@ -5,7 +5,7 @@ TRFUN25PUP4 = read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4)<-c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4)
 
-## Calculate genetic relationship matrix
+## calculate genetic relationship matrix
 id <- df$id
 FirstUniqueIdPos <- which(duplicated(id) == FALSE)
 pos = id[FirstUniqueIdPos] # extract ids for all subjects
@@ -16,15 +16,12 @@ pede <- editPed(sire = sire_id, dam = dam_id, label = pos)
 ped<- with(pede, pedigree(label=label, sire=sire, dam=dam))
 A <- getA(ped)[163:1035,163:1035]
 
-## Transform to the log scale
+## Rescale time interval to [0,1]
 N = length(FirstUniqueIdPos) # N = 873 subjects
 n = length(id) # n = 6860 observations
 age_list <- split(df$x,id)
 trait_list <- split(df$trait,id)
-df$logtrait <- log10(df$trait)
-log_trait_list <- split(df$logtrait,id)
 
-## Rescale time interval to [0,1]
 ### x = (x -min(x))/(max(x) - min(x))
 age_list_new <- list()
 for (i in 1:N){
@@ -32,9 +29,11 @@ for (i in 1:N){
 }
 
 df$x_rescaled <- unsplit(age_list_new,id)
+df$logtrait <- log10(df$trait)
+log_trait_list <- split(df$logtrait,id)
 
-
-## Plot growth curves
+## plot growth curve
+par(mfrow = c(1,1))
 par(mar = c(5, 6, 4, 2) + 0.1)
 plot(c(1, 25), c(0, 400), type = "n", 
      xlab = "Days", 
@@ -42,31 +41,13 @@ plot(c(1, 25), c(0, 400), type = "n",
      xlim = c(0, 25), ylim = c(0, 400), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 25, by = 5), pos = 0) 
-axis(side = 2, at = seq(0, 400, by = 100), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(age_list[[i]], trait_list[[i]], type = "l", col = i)
 }
 mtext("Growth Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
-
-## Plot log growth curves
-par(mar = c(5, 6, 4, 2) + 0.1)
-plot(c(1, 25), c(0, 3), type = "n", 
-     xlab = "Days", 
-     ylab = expression(Log(Mass,~10^-5~g)),
-     xlim = c(0, 25), ylim = c(0, 3), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 25, by = 5), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-for (i in 1:N){
-  lines(age_list[[i]], log_trait_list[[i]], type = "l", col = i)
-}
-mtext("Log Growth Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(0, 25, by = 5), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 400, by = 100), pos = 0, lwd = 2) 
 ########################################################################################
 
 ## Problem with smoothing
@@ -78,7 +59,7 @@ for (i in 1:4){
   mass_demo[,i] <- predict(ss_demo, timefine)$y
 }
 
-## Smoothe data, choose smoothing parameter <= 1e-4
+## Smooth data, choose smoothing parameter <= 1e-4
 
 mass_smoothed <-list()
 pred_mass_fine <- matrix(0,100,N) # store the smoothed mass predicted on the dense grid
@@ -161,51 +142,50 @@ print(combined_plot)
 ## Example of two growth curves with data ponits
 par(mar = c(5, 6, 4, 2) + 0.1)
 plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = expression(Log(Mass,~10^-5~g)),
      xlim = c(0, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+     axes = FALSE)
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 lines(age_list_new[[1]],log_trait_list[[1]], type = "l")
 lines(age_list_new[[1]],log_trait_list[[1]], type = "p")
 lines(age_list_new[[25]],log_trait_list[[25]], type = "l")
 lines(age_list_new[[25]],log_trait_list[[25]], type = "p")
-abline(h = 0, v=0)
-                       
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
+
 ## plot raw log growth curves vs plot smoothed log growth curves
+par(mfrow = c(1,2))
 par(mar = c(5, 6, 4, 2) + 0.1)
 plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = expression(Log(Mass,~10^-5~g)),
      xlim = c(0, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(age_list_new[[i]], log10(trait_list[[i]]), type = "l", col = i)
 }
-abline(h = 0, v=0)
+mtext("Raw Log Growth Curves", side = 3, adj = 0, line = 1, font = 2)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 
 par(mar = c(5, 6, 4, 2) + 0.1)
 plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = expression(Log(Mass,~10^-5~g)),
      xlim = c(0, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timefine, pred_logmass_fine[,i], type = "l", col = i)
 }
-abline(h = 0, v=0)
-
+mtext("Smoothed Log Growth Curves", side = 3, adj = 0, line = 1, font = 2)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 #################################################################################################
 
 ## Align Log Growth Curves
@@ -218,35 +198,32 @@ warping_logmass_funs <- aligned_logmass_process$warping_functions
 par(mfrow = c(1, 2))
 par(mar = c(5, 6, 4, 2) + 0.1, font.main = 1)
 plot(c(0,1), c(0, 1), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "Warping Functions",
      xlim = c(0, 1), ylim = c(0,1), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 1, by = 0.1), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timefine, warping_logmass_funs[,i], type = "l", col = i)
 }
 mtext("Warping Functions", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
 
 plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = expression(Log(Mass,~10^-5~g)),
      xlim = c(0, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timefine, aligned_logmass_curve[,i], type = "l", col = i)
 }
 mtext("Aligned Log Mass Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
-
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 ############################################################################################
 
 ## FPCA
@@ -264,19 +241,18 @@ pl
 par(mfrow = c(2, 1))
 par(font.main = 1)
 plot(c(0,1), c(0, 1), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(0, 1), ylim = c(-0.1,0.2), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-0.1, 0.2, by = 0.05), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timefine, pcs_logmass[,1], type = "l", col = i)
 }
 mtext("Principal Component 1 of Aligned Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.1, 0.2, by = 0.05), pos = 0, lwd = 2) 
 
 par(font.main = 1)
 plot(c(0,1), c(0, 1), type = "n", 
@@ -285,46 +261,13 @@ plot(c(0,1), c(0, 1), type = "n",
      xlim = c(0, 1), ylim = c(-0.1,0.2), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-0.1, 0.2, by = 0.05), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timefine, pcs_logmass[,2], type = "l", col = i)
 }
 mtext("Principal Component 2 of Aligned Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
-
-par(font.main = 1)
-plot(c(0,1), c(0, 1), type = "n", 
-     xlab = "Time", 
-     ylab = "",
-     xlim = c(0, 1), ylim = c(-0.3,0.15), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-0.3, 0.15, by = 0.05), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-for (i in 1:N){
-  lines(timefine, pcs_logmass[,3], type = "l", col = i)
-}
-mtext("Principal Component 3 of Aligned Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
-
-par(font.main = 1)
-plot(c(0,1), c(0, 1), type = "n", 
-     xlab = "Time", 
-     ylab = "",
-     xlim = c(0, 1), ylim = c(-0.2,0.4), 
-     xaxs = "i", yaxs = "i",
-     axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-0.2, 0.4, by = 0.05), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
-for (i in 1:N){
-  lines(timefine, pcs_logmass[,4], type = "l", col = i)
-}
-mtext("Principal Component 4 of Aligned Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.1, 0.2, by = 0.05), pos = 0, lwd =2 ) 
 ################################################################################################
 
 ## Model Fitting (Log scale)
@@ -341,35 +284,32 @@ for (i in 1:N){
 par(mfrow = c(1, 2))
 par(mar = c(5, 6, 4, 2) + 0.1, font.main = 1)
 plot(c(0,1), c(0, 1), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "Warping Functions",
      xlim = c(0, 1), ylim = c(0,1), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 1, by = 0.1), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(age_list_new[[i]], gamma_logmass[[i]], type = "l", col = i)
 }
 mtext("Warping Functions", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
 
 plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = expression(Mass~(10^-5~g)),
      xlim = c(0, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(age_list_new[[i]], aligned_logtrait[[i]], type = "l", col = i)
 }
 mtext("Aligned Raw Log Mass Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
-
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 ########################################################################################
 
 ### Prepare model basis
@@ -384,7 +324,7 @@ for (i in 1:N){
 }
 
 phi_logmass <- do.call(rbind,phi_logmass_list)
-colnames(phi_logmass) <- c("phi1", "phi2", "phi3","phi4")
+colnames(phi_logmass) <- c("phi1", "phi2", "phi3", "phi4")
 
 ## Reform dataframe
 df_logmass <- data.frame(id = id, trait = unsplit(aligned_logtrait,id), phi_logmass)
@@ -409,21 +349,21 @@ isSingular(ffL) # original tol = 1e-4
 betaL <- fixef(ffL)
 fefL <- pcs_logmass[,1:3] %*% betaL
 
-df_FE <- data.frame(
-  Time = rep(timefine, 2),
-  Value = c(aligned_logmass_mean, fefL),
-  FE = rep(c("mean", "estimated fixed effect"), each = length(timefine))
-)
-
-pfe <- ggplot(df_FE, aes(x = Time, y = Value, linetype = FE, color = FE)) +
-  geom_line() +  
-  labs(x = "Time", y = expression(Log(Mass,~10^-5~g)), title = "") +
-  scale_color_manual(values = c("mean" = "red", "estimated fixed effect" = "black")) +  # Assign colors to lines
-  scale_linetype_manual(values = c("mean" = "solid", "estimated fixed effect" = "dashed")) +  # Assign line types
-  theme_minimal() +
-  theme(legend.position = c(0.8,0.2))
-pfe
-#ggsave("FElogmass.png", plot = pfe, width = 6, height = 3, dpi = 300)
+par(mfrow = c(1,1))
+par(mar = c(5, 6, 4, 2) + 0.1)
+plot(c(0,1), c(0, 3), type = "n", 
+     xlab = "Standardised Time", 
+     ylab = expression(Log(Mass,~10^-5~g)),
+     xlim = c(0, 1), ylim = c(0,3), 
+     xaxs = "i", yaxs = "i",
+     axes = FALSE) 
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
+lines(timefine, fefL, type = "l", col = "black")
+lines(timefine, aligned_logmass_mean, type = "l", col = "red")
+mtext("Fixed Effect", side = 3, adj = 0, line = 1, font = 2)
+legend("bottomright", legend= c("Estimated FE", "Mean"), lty = c("solid", "dashed"), bty = "n", col = c("black","red"))
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 
 ## Random effects
 vcL <- VarCorr(ffL)
@@ -458,34 +398,32 @@ P_funL <- CG_funL + CE_funL
 fig5 <- plot_ly(showscale = FALSE, scene='scene2') 
 fig5 <- fig5 %>% add_surface(z = ~P_funL, x= timefine, y = timefine)
 
-fig_RR3 <- subplot(fig3, fig5) 
+fig_RR3 <- subplot(fig5, fig3) 
 fig_RR3 <- fig_RR3 %>% layout(title = "",
-                              scene = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
+                              scene2 = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
                                            xaxis=list(title = "Time"),
                                            yaxis =list(title = "Time") , 
-                                           zaxis=list(range=c(-0.001,0.1),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
+                                           zaxis=list(range=c(-0.001,0.1),title = "Phenotypic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
-                              scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
+                              scene = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
                                             xaxis=list(title = "Time"),
                                             yaxis =list(title = "Time"),
-                                            zaxis=list(range=c(-0.001,0.1),title = "Phenotypic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
+                                            zaxis=list(range=c(-0.001,0.1),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'))
 
 fig_RR3
-
-####################################################################################
+###########################################################################################################
 
 
 ## Estimate sample covariance 
 
 ### Estimate sample covariance function based on aligned raw data
-sample_cov_obj<- GetCovSurface(aligned_logtrait, age_list_new)
+sample_cov_obj<- GetCovSurface(aligned_logtrait, age_list_new, optns = list(nRegGrid = 100))
 #Warning message:
 #In CheckData(Ly, Lt) :
   #There is a time gap of at least 10% of the observed range across subjects
 
 sample_cov_function <- sample_cov_obj$cov
-timegrid <- sample_cov_obj$workGrid
 
 ### Estimate sample covariance function based on aligned smoothed data
 Ly <- list()
@@ -493,11 +431,11 @@ for (i in 1:N){
   Ly[[i]] <- aligned_logmass_curve[,i]
 }
 Lt <- replicate(N, timefine, simplify = FALSE)
-sample_cov_obj_smooth<- GetCovSurface(Ly, Lt)
+sample_cov_obj_smooth<- GetCovSurface(Ly, Lt,optns = list(nRegGrid = 100))
 sample_cov_function_smooth <- sample_cov_obj_smooth$cov
 
 fig_sam1 <-  plot_ly(showscale=FALSE, scene='scene') 
-fig_sam1 <- fig_sam1 %>% add_surface(z = ~sample_cov_function, x = timegrid, y = timegrid)
+fig_sam1 <- fig_sam1 %>% add_surface(z = ~sample_cov_function, x = timefine, y = timefine)
 
 fig_sam2 <-  plot_ly(showscale=FALSE, scene='scene2') 
 fig_sam2 <- fig_sam2 %>% add_surface(z = ~sample_cov_function_smooth, x = timefine, y = timefine)
@@ -536,37 +474,33 @@ eigenfunL_CE2 <- eigen(CE_funL)$vectors[,2]
 
 par(mfrow = c(1,2))
 plot(c(0,1), c(-0.25, 0.2), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(0, 1), ylim = c(-0.25,0.2), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = -0.25) 
-axis(side = 2, at = seq(-0.25, 0.2, by = 0.05), pos = 0)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 lines(timefine, eigenfunL_CG1, type = "l", lty = "solid")
 lines(timefine, eigenfunL_CG2, type = "l", lty = "dashed")
 mtext("Genetic Eigenfunction (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
 legend("bottomright", legend= c("First EF", "Second EF"), lty = c("solid", "dashed"), bty = "n")
-abline(v=0)
-abline(h=0, lty = "dashed")
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.25, 0.2, by = 0.05), pos = 0, lwd = 2)
 
 plot(c(0,1), c(-0.25, 0.2), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(0, 1), ylim = c(-0.25,0.2), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = -0.25) 
-axis(side = 2, at = seq(-0.25, 0.2, by = 0.05), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 lines(timefine, eigenfunL_CE1, type = "l", lty = "solid")
 lines(timefine, eigenfunL_CE2, type = "l", lty = "dashed")
 mtext("Environmental Eigenfunction (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
 legend("bottomright", legend= c("First EF", "Second EF"), lty = c("solid", "dashed"), bty = "n")
-abline(v=0)
-abline(h=0, lty = "dashed")
-################################################################################################
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.25, 0.2, by = 0.05), pos = 0, lwd = 2) 
+###############################################################################
 
 ## Selection to response
 
@@ -576,38 +510,34 @@ deltaY1 <- eigenval1 * eigenfunL_CG1
 deltaY2 <- eigenval2 * eigenfunL_CG2
 Y_newgen1 <- aligned_logmass_mean + deltaY1
 Y_newgen2 <- aligned_logmass_mean + deltaY2
-                       
-par(mfrow = c(1,1))
+
+par(mfrow = c(1,2))
 par(mar = c(5, 6, 4, 2) + 0.1)
 plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = expression(Log(Mass,~10^-5~g)),
      xlim = c(0, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 lines(timefine, aligned_logmass_mean, type = "l", lty = "solid", col = "red")
 lines(timefine, Y_newgen1, type = "l", lty = "dashed", col = "black")
 legend("bottomright", legend= c("Mean: current generation", "Mean: next generation"), lty = c("solid", "dashed"), bty = "n", col = c("red","black"))
 mtext("Response to Seletction (1st Eigenfunction)", side = 3, adj = 0, line = 1, font = 2)
-abline(v=0)
-abline(h = 0)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 
 par(mar = c(5, 6, 4, 2) + 0.1)
 plot(c(0,1), c(0, 3), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = expression(Log(Mass,~10^-5~g)),
      xlim = c(0, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 lines(timefine, aligned_logmass_mean, type = "l", lty = "solid", col = "red")
 lines(timefine, Y_newgen2, type = "l", lty = "dashed", col = "black")
 legend("bottomright", legend= c("Mean: current generation", "Mean: next generation"), lty = c("solid", "dashed"), bty = "n", col = c("red","black"))
 mtext("Response to Seletction (2nd Eigenfunction)", side = 3, adj = 0, line = 1, font = 2)
-abline(v=0)
-abline(h = 0)
+axis(side = 1, at = seq(0, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
