@@ -48,7 +48,7 @@ FEL_nonsing <- fda::fbplot(fef_sapL_nonsing, x = timefine, xlab = "Time", ylab =
                       ylim = c(0,3), color = "grey", barcol = "lightblue")
 lines(timefine,fefL_hat, lty = "solid", col = "red")
 mtext("Fixed Effect (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 ### Eigenfunctions
 eigenfun1_CGfunL <- eigen(CG_funL_hat)$vectors[,1]
@@ -76,28 +76,28 @@ GEL1_nonsing <- fda::fbplot(GeigenL1_nonsing, x = timefine, xlab = "Time", ylab 
                       color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 1 (Log)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 EEL1_nonsing <- fda::fbplot(EeigenL1_nonsing, x = timefine, xlab = "Time", ylab = "", 
                          xlim = c(0,1),ylim = c(-0.5,0.5),
                          color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CEfunL, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction 1 (Log)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 GEL2_nonsing <- fda::fbplot(GeigenL2_nonsing, x = timefine, xlab = "Time", ylab = "", 
                    xlim = c(0,1), ylim = c(-0.5,0.5),
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 2 (Log)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 EEL2_nonsing <- fda::fbplot(EeigenL2_nonsing, x = timefine, xlab = "Time", ylab = "", 
                    xlim = c(0,1),ylim = c(-0.5,0.5),
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CEfunL, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction 2 (Log)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 ################################################################################
 ## remove outliers
@@ -126,28 +126,28 @@ GEL1_300 <- fda::fbplot(GeigenL1_300, x = timefine, xlab = "Time", ylab = "",
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 1 (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 EEL1_300 <- fda::fbplot(EeigenL1_300, x = timefine, xlab = "Time", ylab = "", 
                    xlim = c(0,1),ylim = c(-0.25,0.1),
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CEfunL, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction 1 (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 GEL2_300 <- fda::fbplot(GeigenL2_300, x = timefine, xlab = "Time", ylab = "", 
                    xlim = c(0,1), ylim = c(-0.15,0.2),
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 2 (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 EEL2_300 <- fda::fbplot(EeigenL2_300, x = timefine, xlab = "Time", ylab = "", 
                    xlim = c(0,1),ylim = c(-0.15,0.2),
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CEfunL, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction 2 (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 ##########################################################
 
@@ -169,7 +169,7 @@ lines(timefine, FEmeanL + FEL_bound, lty = "dashed")
 lines(timefine, FEmeanL - FEL_bound, lty = "dashed")
 lines(timefine, fefL_hat, lty = "solid", col = "red")
 mtext("Fixed Effect (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 ## Eigenfunctions
 mean_GEL1 <- rowMeans(GeigenL1_300)
@@ -364,25 +364,25 @@ GE1 <- fda::fbplot(Geigen1, x = timefine, xlab = "Time", ylab = "",
                             color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CGfun, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 1", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 EE1 <- fda::fbplot(Eeigen1, x = timefine, xlab = "Time", ylab = "", 
                             xlim = c(0,1),ylim = c(-0.2,0),
                             color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CEfun, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 GE2 <- fda::fbplot(Geigen2, x = timefine, xlab = "Time", ylab = "", 
                             xlim = c(0,1),
                             color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CGfun, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 2", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 EE2 <- fda::fbplot(Eeigen2, x = timefine, xlab = "Time", ylab = "", 
                             xlim = c(0,1),
                             color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CEfun, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction 2", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
