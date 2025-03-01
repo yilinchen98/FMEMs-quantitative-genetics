@@ -1,4 +1,4 @@
-# Bootstrap Simulations
+ # Bootstrap Simulations
 
 ## set up true covariance
 N <- 873 # total number of individualsl
@@ -26,13 +26,14 @@ C_fun_true14 <- basis14 %*% C_true %*% t(basis14)
 
 
 ## load data
+setwd("D:/KCL_2023-2027_PhD/FMEM_QuantiativeGenetics_Project/PhD_Project_Contents/R_code/Bootstrapping_simulation/5715_41")
 files <- list.files(pattern = "\\.Rdata$")
 
 for (file in files) {
   load(file)
 }
 
-load("simulated_data/TC_fixed_effect.Rdata")
+load("D:/KCL_2023-2027_PhD/FMEM_QuantiativeGenetics_Project/PhD_Project_Contents/R_code/Functional_simulation/simulation_data/TC_fixed_effect.Rdata")
 f_true7 <- convert_to_basisfunctions(timefine, fixed_effect, t7)
 f_true14 <- convert_to_basisfunctions(timefine, fixed_effect, t14)
 
@@ -43,7 +44,7 @@ FE5715_41 <- fda::fbplot(fef_sap41_final[,1:300], x = t7, xlab = "Time", ylab = 
                       ylim = c(-5,300), color = "grey", barcol = "lightblue")
 lines(t7,f_true7, lty = "solid", col = "red")
 mtext("ID 41", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 ### Eigenfunctions
 eigen_true7 <- eigen(C_fun_true7)$vectors[,1]
@@ -62,14 +63,14 @@ GE5715_41 <- fda::fbplot(Geigen5715_41, x = t7, xlab = "Time", ylab = "",
                       color = "grey", barcol = "lightblue",outliercol="orange")
 lines(t7,eigen_true7, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 EE5715_41 <- fda::fbplot(Eeigen5715_41, x = t7, xlab = "Time", ylab = "", 
                          xlim = c(0,1),ylim = c(-1,0.5),
                          color = "grey", barcol = "lightblue",outliercol="orange")
 lines(t7,eigen_true7, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 #################################################################################
 
@@ -90,7 +91,7 @@ lines(t7, FE5715_mean41 + FE5715_bound_41, lty = "dashed")
 lines(t7, FE5715_mean41 - FE5715_bound_41, lty = "dashed")
 lines(t7, f_true7, lty = "solid", col = "red")
 mtext("ID 41", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 ## Eigenfuncitons
 mean_GE5715_41 <- rowMeans(Geigen5715_41)
@@ -112,7 +113,7 @@ lines(t7, mean_GE5715_41 + Geigen_571541_sup, lty = "dashed")
 lines(t7, mean_GE5715_41 - Geigen_571541_sup, lty = "dashed")
 lines(t7, eigen_true7, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 plot(c(0,1), c(-1,0.5), type = "n", xlab = "Time", ylab = "")
 lines(t7, mean_EE5715_41, lty = "solid")
@@ -120,7 +121,7 @@ lines(t7, mean_EE5715_41 + Eeigen_571541_sup, lty = "dashed")
 lines(t7, mean_EE5715_41 - Eeigen_571541_sup, lty = "dashed")
 lines(t7, eigen_true7, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 ## Covariance functions
 mean_CG5715_41 <- apply(CG_fun_sap41_300, c(1, 2), mean)
