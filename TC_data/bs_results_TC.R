@@ -44,7 +44,7 @@ CE_fun_sapL_nonsing <- CE_fun_sapL[,,-sfit_ID_log]
 ### FE
 timefine <- seq(0,1, length = 100)
 par(mfrow = c(1,1), bty = "l")
-FEL_nonsing <- fda::fbplot(fef_sapL_nonsing, x = timefine, xlab = "Time", ylab = "", xlim = c(0,1),
+FEL_nonsing <- fda::fbplot(fef_sapL_nonsing, x = timefine, xlab = "Standardised Time", ylab = "", xlim = c(0,1),
                       ylim = c(0,3), color = "grey", barcol = "lightblue")
 lines(timefine,fefL_hat, lty = "solid", col = "red")
 mtext("Fixed Effect (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
@@ -71,28 +71,28 @@ for (i in 1:766){
 }
 
 par(mfrow = c(1,2), byt = "l")
-GEL1_nonsing <- fda::fbplot(GeigenL1_nonsing, x = timefine, xlab = "Time", ylab = "", 
+GEL1_nonsing <- fda::fbplot(GeigenL1_nonsing, x = timefine, xlab = "Standardised Time", ylab = "", 
                       xlim = c(0,1), ylim = c(-0.5,0.5),
                       color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 1 (Log)", side = 3, adj = 0, line = 1, font = 2)
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
-EEL1_nonsing <- fda::fbplot(EeigenL1_nonsing, x = timefine, xlab = "Time", ylab = "", 
+EEL1_nonsing <- fda::fbplot(EeigenL1_nonsing, x = timefine, xlab = "Standardised Time", ylab = "", 
                          xlim = c(0,1),ylim = c(-0.5,0.5),
                          color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CEfunL, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction 1 (Log)", side = 3, adj = 0, line = 1, font = 2)
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
-GEL2_nonsing <- fda::fbplot(GeigenL2_nonsing, x = timefine, xlab = "Time", ylab = "", 
+GEL2_nonsing <- fda::fbplot(GeigenL2_nonsing, x = timefine, xlab = "Standardised Time", ylab = "", 
                    xlim = c(0,1), ylim = c(-0.5,0.5),
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 2 (Log)", side = 3, adj = 0, line = 1, font = 2)
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
-EEL2_nonsing <- fda::fbplot(EeigenL2_nonsing, x = timefine, xlab = "Time", ylab = "", 
+EEL2_nonsing <- fda::fbplot(EeigenL2_nonsing, x = timefine, xlab = "Standardised Time", ylab = "", 
                    xlim = c(0,1),ylim = c(-0.5,0.5),
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CEfunL, lty = "solid", col = "red")
@@ -102,7 +102,7 @@ grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 ################################################################################
 ## remove outliers
 par(mfrow = c(1,1), bty = "l")
-FE_300 <- fda::fbplot(fef_sapL_300, x = timefine, xlab = "Time", ylab = "", xlim = c(0,1),
+FE_300 <- fda::fbplot(fef_sapL_300, x = timefine, xlab = "Standardised Time", ylab = "", xlim = c(0,1),
                           ylim = c(0,3), color = "grey", barcol = "lightblue")
 lines(timefine,fefL_hat, lty = "solid", col = "red")
 mtext("Fixed Effect (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
@@ -121,28 +121,28 @@ for (i in 1:300){
 }
 
 par(mfrow = c(1,2), bty = "l")
-GEL1_300 <- fda::fbplot(GeigenL1_300, x = timefine, xlab = "Time", ylab = "", 
+GEL1_300 <- fda::fbplot(GeigenL1_300, x = timefine, xlab = "Standardised Time", ylab = "", 
                    xlim = c(0,1), ylim = c(-0.25,0.1),
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 1 (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
-EEL1_300 <- fda::fbplot(EeigenL1_300, x = timefine, xlab = "Time", ylab = "", 
+EEL1_300 <- fda::fbplot(EeigenL1_300, x = timefine, xlab = "Standardised Time", ylab = "", 
                    xlim = c(0,1),ylim = c(-0.25,0.1),
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CEfunL, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction 1 (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
-GEL2_300 <- fda::fbplot(GeigenL2_300, x = timefine, xlab = "Time", ylab = "", 
+GEL2_300 <- fda::fbplot(GeigenL2_300, x = timefine, xlab = "Standardised Time", ylab = "", 
                    xlim = c(0,1), ylim = c(-0.15,0.2),
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 2 (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
-EEL2_300 <- fda::fbplot(EeigenL2_300, x = timefine, xlab = "Time", ylab = "", 
+EEL2_300 <- fda::fbplot(EeigenL2_300, x = timefine, xlab = "Standardised Time", ylab = "", 
                    xlim = c(0,1),ylim = c(-0.15,0.2),
                    color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CEfunL, lty = "solid", col = "red")
@@ -163,7 +163,7 @@ for (i in 1:300){
 
 FEL_bound <- quantile(FEL_diff, probs = 0.95)
 
-plot(c(0,1), c(0,3), type = "n", xlab = "Time", ylab = "")
+plot(c(0,1), c(0,3), type = "n", xlab = "Standardised Time", ylab = "")
 lines(timefine, FEmeanL, lty = "solid")
 lines(timefine, FEmeanL + FEL_bound, lty = "dashed")
 lines(timefine, FEmeanL - FEL_bound, lty = "dashed")
@@ -194,7 +194,7 @@ GeigenL2_sup2 <- quantile(GeigenL_diff2, probs = 0.95)
 EeigenL2_sup2 <- quantile(EeigenL_diff2, probs = 0.95)
 
 par(mfrow = c(1,2), bty = "l")
-plot(c(0,1), c(-0.25,0.1), type = "n", xlab = "Time", ylab = "")
+plot(c(0,1), c(-0.25,0.1), type = "n", xlab = "Standardised Time", ylab = "")
 lines(timefine, mean_GEL1, lty = "solid")
 lines(timefine, mean_GEL1 + GeigenL1_sup1, lty = "dashed")
 lines(timefine, mean_GEL1 - GeigenL1_sup1, lty = "dashed")
@@ -202,7 +202,7 @@ lines(timefine, eigenfun1_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 1 (Log Scale)", side = 3, adj = 0, line = 1, font = 2)
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
-plot(c(0,1), c(-0.25,0.1), type = "n", xlab = "Time", ylab = "")
+plot(c(0,1), c(-0.25,0.1), type = "n", xlab = "Standardised Time", ylab = "")
 lines(timefine, mean_EEL1, lty = "solid")
 lines(timefine, mean_EEL1 + EeigenL1_sup1, lty = "dashed")
 lines(timefine, mean_EEL1 - EeigenL1_sup1, lty = "dashed")
@@ -211,7 +211,7 @@ mtext("Environmental Eigenfunction 1 (log Scale)", side = 3, adj = 0, line = 1, 
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 
-plot(c(0,1), c(-0.15,0.2), type = "n", xlab = "Time", ylab = "")
+plot(c(0,1), c(-0.15,0.2), type = "n", xlab = "Standardised Time", ylab = "")
 lines(timefine, mean_GEL2, lty = "solid")
 lines(timefine, mean_GEL2 + GeigenL2_sup2, lty = "dashed")
 lines(timefine, mean_GEL2 - GeigenL2_sup2, lty = "dashed")
@@ -219,7 +219,7 @@ lines(timefine, eigenfun2_CGfunL, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 2 (log Scale)", side = 3, adj = 0, line = 1, font = 2)
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
-plot(c(0,1), c(-0.15,0.2), type = "n", xlab = "Time", ylab = "")
+plot(c(0,1), c(-0.15,0.2), type = "n", xlab = "Standardised Time", ylab = "")
 lines(timefine, mean_EEL2, lty = "solid")
 lines(timefine, mean_EEL2 + EeigenL2_sup2, lty = "dashed")
 lines(timefine, mean_EEL2 - EeigenL2_sup2, lty = "dashed")
@@ -255,8 +255,8 @@ fig <- fig %>% add_surface(z = ~CGL_upper, x = ~timefine, y = ~timefine,
                            opacity = 0.98,colorscale = list(c(0, 'rgb(169, 169, 169)'), c(1, 'rgb(211, 211, 211)')))
 fig <- fig %>% add_surface(z = ~CGL_lower, x = ~timefine, y = ~timefine, opacity = 0.98,colorscale = list(c(0, 'rgb(169, 169, 169)'), c(1, 'rgb(211, 211, 211)')))
 fig <- fig %>% layout(scene = list(
-  xaxis = list(title = 'Time'),
-  yaxis = list(title = 'Time'),
+  xaxis = list(title = "Standardised Time"),
+  yaxis = list(title = "Standardised Time"),
   zaxis = list(range = c(-0.015,0.06),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))")
 ))
 
@@ -268,8 +268,8 @@ fig <- fig %>% add_surface(z = ~CEL_upper, x = ~timefine, y = ~timefine,
                            opacity = 0.98,colorscale = list(c(0, 'rgb(169, 169, 169)'), c(1, 'rgb(211, 211, 211)')))
 fig <- fig %>% add_surface(z = ~CEL_lower, x = ~timefine, y = ~timefine, opacity = 0.98,colorscale = list(c(0, 'rgb(169, 169, 169)'), c(1, 'rgb(211, 211, 211)')))
 fig <- fig %>% layout(scene = list(
-  xaxis = list(title = 'Time'),
-  yaxis = list(title = 'Time'),
+  xaxis = list(title = "Standardised Time"),
+  yaxis = list(title = "Standardised Time"),
   zaxis = list(range = c(-0.015,0.02),title = "Environmental Covariance (Log(Mass, 10<sup>-5</sup> g/t))")
 ))
 
@@ -280,7 +280,7 @@ fig
 par(mfrow = c(2,4))
 for (k in sfit_ID_log[1:8]){
   Y_list <- split(Y_estL[,k], id) 
-  plot(c(0,1), c(-0.5,3), type = "n", xlab = "Time", ylab = "Logmass", main = paste("Sample ID", k))
+  plot(c(0,1), c(-0.5,3), type = "n", xlab = "Standardised Time", ylab = expression(Log(Mass,~10^-5~g)), main = paste("Sample ID", k))
   for (i in 1:N){
     lines(age_list_new[[i]], Y_list[[i]], type = "l", col = i)
   }
@@ -296,13 +296,13 @@ for( k in sfit_ID_log[1:8]){
   fig_RR <- subplot(fig1, fig2) 
   fig_RR <- fig_RR %>% layout(title = paste("Sample ID", k),
                               scene = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time") , 
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time") , 
                                            zaxis=list(title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
                               scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time"),
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time"),
                                             zaxis=list(title = "Environmental Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'))
   
@@ -321,13 +321,13 @@ fig2 <- fig2 %>% add_surface(z = ~CE_fun_sapL[,,10], x= timefine, y = timefine)
 fig_RR <- subplot(fig1, fig2) 
 fig_RR <- fig_RR %>% layout(title ="Sample 19 (Nonsingular)",
                               scene = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time") , 
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time") , 
                                            zaxis=list(title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
                               scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time"),
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time"),
                                             zaxis=list(title = "Environmental Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'))
   
@@ -359,28 +359,28 @@ for (i in 1:127){
 }
 
 par(mfrow = c(1,2), byt = "l")
-GE1 <- fda::fbplot(Geigen1, x = timefine, xlab = "Time", ylab = "", 
+GE1 <- fda::fbplot(Geigen1, x = timefine, xlab = "Standardised Time", ylab = "", 
                             xlim = c(0,1), ylim = c(-0.2,0),
                             color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CGfun, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 1", side = 3, adj = 0, line = 1, font = 2)
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
-EE1 <- fda::fbplot(Eeigen1, x = timefine, xlab = "Time", ylab = "", 
+EE1 <- fda::fbplot(Eeigen1, x = timefine, xlab = "Standardised Time", ylab = "", 
                             xlim = c(0,1),ylim = c(-0.2,0),
                             color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun1_CEfun, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction", side = 3, adj = 0, line = 1, font = 2)
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
-GE2 <- fda::fbplot(Geigen2, x = timefine, xlab = "Time", ylab = "", 
+GE2 <- fda::fbplot(Geigen2, x = timefine, xlab = "Standardised Time", ylab = "", 
                             xlim = c(0,1),
                             color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CGfun, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction 2", side = 3, adj = 0, line = 1, font = 2)
 grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
-EE2 <- fda::fbplot(Eeigen2, x = timefine, xlab = "Time", ylab = "", 
+EE2 <- fda::fbplot(Eeigen2, x = timefine, xlab = "Standardised Time", ylab = "", 
                             xlim = c(0,1),
                             color = "grey", barcol = "lightblue",outliercol="orange")
 lines(timefine,eigenfun2_CEfun, lty = "solid", col = "red")
