@@ -29,12 +29,12 @@ C_fun_true7 <- basis7 %*% C_true %*% t(basis7)
 C_fun_true14 <- basis14 %*% C_true %*% t(basis14)
 
 # load result
+load("TC_fixed_effect.Rdata")
 files <- list.files(pattern = "\\.Rdata$")
-
 for (file in files) {
   load(file)
 }
-load("TC_fixed_effect.Rdata")
+
 f_true7 <- convert_to_basisfunctions(timefine, fixed_effect, t7)
 f_true14 <- convert_to_basisfunctions(timefine, fixed_effect, t14)
 
@@ -66,7 +66,7 @@ boxplot(FefErr_list7,
         ylim = c(1,8),
         names = c(TeX("$\\sigma^2 = 5$"), TeX("$\\sigma^2 = 15$"), TeX("$\\sigma^2 = 25$")))
 mtext("Sampling points per subject = 7", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 FefErr_list14 <- list(ferr_51405, ferr_51415, ferr_51425)
 # Generate the boxplot
@@ -76,7 +76,7 @@ boxplot(FefErr_list14,
         ylim = c(1,8),
         names = c(TeX("$\\sigma^2 = 5$"), TeX("$\\sigma^2 = 15$"), TeX("$\\sigma^2 = 25$")))
 mtext("Sampling points per subject = 14", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 ###################################################
 
@@ -136,14 +136,10 @@ boxplot(CovErr_list7,
         ylim = c(0,1100),
         col = rep(c("salmon", "lightblue"), 3),
         xaxt = 'n')  # Disable default x-axis
-
-# Add custom x-axis labels
 axis(1, at = group_labels, labels = c(TeX("$\\sigma^2 = 5$"), TeX("$\\sigma^2 = 15$"), TeX("$\\sigma^2 = 25$")))
-
-# Add legend
 legend("topright", legend = c("Genetic", "Environmental"), fill = c("salmon", "lightblue"), bty = "n")
 mtext("Sampling points per subject = 7", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 #############################################################################################################
 CovErr_list14 <- list(GenErr_51405, EnvErr_51405, GenErr_51415, EnvErr_51415, GenErr_51425, EnvErr_51425)
@@ -166,14 +162,10 @@ boxplot(CovErr_list14,
         ylim = c(0,1100),
         col = rep(c("salmon", "lightblue"), 3),
         xaxt = 'n')  # Disable default x-axis
-
-# Add custom x-axis labels
 axis(1, at = group_labels, labels = c(TeX("$\\sigma^2 = 5$"), TeX("$\\sigma^2 = 15$"), TeX("$\\sigma^2 = 25$")))
-
-# Add legend
 legend("topright", legend = c("Genetic", "Environmental"), fill = c("salmon", "lightblue"), bty = "n")
 mtext("Sampling points per subject = 14", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 
 #######################################################################################
@@ -192,13 +184,13 @@ FE5715 <- fda::fbplot(fef_5pc715, x = t7, xlab = "Time", ylab = "", xlim = c(0,1
                       ylim = c(-5,300), color = "grey", barcol = "lightblue")
 lines(t7,f_true7, lty = "solid", col = "red")
 mtext("Sampling points per subject = 7", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 FE51415 <- fda::fbplot(fef_5pc1415, x = t14, xlab = "Time", ylab = "", xlim = c(0,1),
                       ylim = c(-5,300), color = "grey", barcol = "lightblue")
 lines(t14,f_true14, lty = "solid", col = "red")
 mtext("Sampling points per subject = 14", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 FE5725 <- fda::fbplot(fef_5pc725, x = t7, xlab = "Time", ylab = "", xlim = c(0,1),
                       ylim = c(-5,300), color = "grey", barcol = "lightblue")
@@ -253,9 +245,11 @@ GE5705 <- fda::fbplot(Geigen5705, x = t7, xlab = "Time", ylab = "",
 lines(t7,eigen_true7, lty = "solid", col = "red")
 
 GE5715 <- fda::fbplot(Geigen5715, x = t7, xlab = "Time", ylab = "", 
-                      xlim = c(0,1), ylim = c(-0.8,0),
+                      xlim = c(0,1), ylim = c(-0.8,1),
                       color = "grey", barcol = "lightblue",outliercol="orange")
 lines(t7,eigen_true7, lty = "solid", col = "red")
+mtext("Sampling points per subject = 7", side = 3, adj = 0, line = 1, font = 2)
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 GE5725 <- fda::fbplot(Geigen5725, x = t7, xlab = "Time", ylab = "", 
                       xlim = c(0,1), ylim = c(-1,1),
@@ -268,9 +262,11 @@ GE51405 <- fda::fbplot(Geigen51405, x = t14, xlab = "Time", ylab = "",
 lines(t14,eigen_true14, lty = "solid", col = "red")
 
 GE51415 <- fda::fbplot(Geigen51415, x = t14, xlab = "Time", ylab = "", 
-                       xlim = c(0,1), ylim = c(-0.8,0),
+                       xlim = c(0,1), ylim = c(-0.8,0.4),
                        color = "grey", barcol = "lightblue",outliercol="orange")
 lines(t14,eigen_true14, lty = "solid", col = "red")
+mtext("Sampling points per subject = 14", side = 3, adj = 0, line = 1, font = 2)
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 GE51425 <- fda::fbplot(Geigen51425, x = t14, xlab = "Time", ylab = "", 
                        xlim = c(0,1), ylim = c(-1,1),
@@ -288,6 +284,8 @@ EE5715 <- fda::fbplot(Eeigen5715, x = t7, xlab = "Time", ylab = "",
                       xlim = c(0,1), ylim = c(-0.8,1),
                       color = "grey", barcol = "lightblue",outliercol="orange")
 lines(t7,eigen_true7, lty = "solid", col = "red")
+mtext("Sampling points per subject = 7", side = 3, adj = 0, line = 1, font = 2)
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 EE5725 <- fda::fbplot(Eeigen5725, x = t7, xlab = "Time", ylab = "", 
                       xlim = c(0,1), ylim = c(-1,1),
@@ -303,6 +301,8 @@ EE51415 <- fda::fbplot(Eeigen51415, x = t14, xlab = "Time", ylab = "",
                        xlim = c(0,1), ylim = c(-0.8,0.4),
                        color = "grey", barcol = "lightblue",outliercol="orange")
 lines(t14,eigen_true14, lty = "solid", col = "red")
+mtext("Sampling points per subject = 14", side = 3, adj = 0, line = 1, font = 2)
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 EE51425 <- fda::fbplot(Eeigen51425, x = t14, xlab = "Time", ylab = "", 
                        xlim = c(0,1), ylim = c(-1,1),
@@ -352,7 +352,7 @@ lines(t7, mean_FE5715 + FE_5715_sup, lty = "dashed")
 lines(t7, mean_FE5715 - FE_5715_sup, lty = "dashed")
 lines(t7, f_true7, lty = "dotdash", col = "red")
 mtext("Samping points per subject = 7", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 par(mfrow = c(1, 1), bty = "l")
 
@@ -362,7 +362,7 @@ lines(t14, mean_FE51415 + FE_51415_sup, lty = "dashed")
 lines(t14, mean_FE51415 - FE_51415_sup, lty = "dashed")
 lines(t14, f_true14, lty = "solid", col = "red")
 mtext("Samping points per subject = 14", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 
 ###############################################################
 
@@ -443,7 +443,7 @@ lines(t7, mean_GE5715 + Geigen_5715_sup, lty = "dashed")
 lines(t7, mean_GE5715 - Geigen_5715_sup, lty = "dashed")
 lines(t7, eigen_true7, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+mtext("Sampling points per subject = 14", side = 3, adj = 0, line = 1, font = 2)
 
 plot(c(0,1), c(-1.5,1.5), type = "n", xlab = "Time", ylab = "")
 lines(t7, mean_EE5715, lty = "solid")
@@ -451,7 +451,7 @@ lines(t7, mean_EE5715 + Eeigen_5715_sup, lty = "dashed")
 lines(t7, mean_EE5715 - Eeigen_5715_sup, lty = "dashed")
 lines(t7, eigen_true7, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+mtext("Sampling points per subject = 14", side = 3, adj = 0, line = 1, font = 2)
 
 ########################################################################
 plot(c(0,1), c(-0.8,0.4), type = "n", xlab = "Time", ylab = "")
@@ -460,7 +460,7 @@ lines(t14, mean_GE51415 + Geigen_51415_sup, lty = "dashed")
 lines(t14, mean_GE51415 - Geigen_51415_sup, lty = "dashed")
 lines(t14, eigen_true14, lty = "solid", col = "red")
 mtext("Genetic Eigenfunction", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+mtext("Sampling points per subject = 14", side = 3, adj = 0, line = 1, font = 2)
 
 plot(c(0,1), c(-0.8,0.4), type = "n", xlab = "Time", ylab = "")
 lines(t14, mean_EE51415, lty = "solid")
@@ -468,7 +468,7 @@ lines(t14, mean_EE51415 + Eeigen_51415_sup, lty = "dashed")
 lines(t14, mean_EE51415 - Eeigen_51415_sup, lty = "dashed")
 lines(t14, eigen_true14, lty = "solid", col = "red")
 mtext("Environmental Eigenfunction", side = 3, adj = 0, line = 1, font = 2)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "dotted")
+mtext("Sampling points per subject = 14", side = 3, adj = 0, line = 1, font = 2)
 
 ###############################################################
 
