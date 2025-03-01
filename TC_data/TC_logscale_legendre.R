@@ -39,19 +39,18 @@ x_new <- split(df$x_new, id)
 par(mfrow = c(1,1))
 par(mar = c(5, 6, 4, 2) + 0.1, font.main = 1)
 plot(c(-1,1), c(0,3), type = "n",
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab =  expression(Log(Mass,~10^-5~g)),
      xlim = c(-1, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(x_new[[i]], log_trait_list[[i]],type = "l", col = i)
 }
-axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-mtext("Log Mass Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+mtext("Log Growth Curves", side = 3, adj = 0, line = 1, font = 2)
+axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 #############################################################################
 
 # Redo the analysis of Irwin and Carter 2013
@@ -65,35 +64,33 @@ legendrePoly3_1 <- leg(x_new[[1]], n = 3)
 ## Example of Legendre polynomial
 par(mfrow = c(1,2))
 plot(c(-1,1), c(-2,2), type = "n",
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(-1, 1), ylim = c(-2, 2), 
      xaxs = "i", yaxs = "i",
      axes = FALSE)
-axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:4){
   lines(x_new[[1]], legendrePoly3_1[,i], col = i)
 }
 mtext("Orthonormal Legendre Poly of order 3 (Subject 1)", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0, lwd = 2) 
 
 legendrePoly3_2 <- leg(x_new[[2]], n = 3)
 plot(c(-1,1), c(-2,2), type = "n",
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(-1, 1), ylim = c(-2, 2), 
      xaxs = "i", yaxs = "i",
      axes = FALSE)
-axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:4){
   lines(x_new[[2]], legendrePoly3_2[,i], col = i)
 }
 mtext("Orthonomal Legendre Poly of order 3 (Subject 2)", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0, lwd = 2) 
 
 ## Orthogonal Legendre Basis
 
@@ -105,34 +102,32 @@ values2 <- polynomial.values(polynomials = legendre_polys3, x = x_new[[2]])
 ## Example of legendre polynomial
 par(mfrow = c(1,2))
 plot(c(-1,1), c(-2,2), type = "n",
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(-1, 1), ylim = c(-2, 2), 
      xaxs = "i", yaxs = "i",
      axes = FALSE)
-axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:4){
   lines(x_new[[1]], values1[[i]], col = i)
 }
 mtext("Orthogonal Legendre Poly of order 3 (Subject 1)", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0, lwd = 2) 
 
 plot(c(-1,1), c(-2,2), type = "n",
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(-1, 1), ylim = c(-2, 2), 
      xaxs = "i", yaxs = "i",
      axes = FALSE)
-axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:4){
   lines(x_new[[2]], values2[[i]], col = i)
 }
 mtext("Orthogonal Legendre Poly of order 3 (Subject 2)", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0, lwd = 2) 
 
 ######################################################################################
 
@@ -174,35 +169,33 @@ fpca_funs <- logFPCA$phi
 par(mfrow = c(2, 1))
 par(font.main = 1)
 plot(c(-1,1), c(-0.4, 1.4), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(-1, 1), ylim = c(-0.4,1.4), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0) 
-axis(side = 2, at = seq(-0.4, 1.2, by = 0.2), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timegrid, fpca_funs[,1], type = "l", col = i)
 }
 mtext("Principal Component 1 of Log Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.4, 1.2, by = 0.2), pos = 0, lwd = 2) 
 
 par(font.main = 1)
 plot(c(-1,1), c(-0.4, 1.4), type = "n", 
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(-1, 1), ylim = c(-0.4,1.4), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0) 
-axis(side = 2, at = seq(-0.4, 1.2, by = 0.2), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(timegrid, fpca_funs[,2], type = "l", col = i)
 }
 mtext("Principal Component 2 of Log Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-0.4, 1.2, by = 0.2), pos = 0, lwd = 2) 
 #################################################################################
 
 ## Sample covariance function
@@ -221,13 +214,13 @@ fig2 <- fig2 %>% add_surface(z = ~sample_cov, x= timegrid, y = timegrid)
 fig_RR <- subplot(fig1, fig2) 
 fig_RR <- fig_RR %>% layout(scene = list(title = "",
                                          domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                         xaxis=list(title = "Time"),
-                                         yaxis =list(title = "Time") , 
+                                         xaxis=list(title = "Standardised Time"),
+                                         yaxis =list(title = "Standardised Time") , 
                                          zaxis=list(range=c(-0.01,0.1),title = "Sample Covariance (0 < t < 1 )"),
                                          aspectmode='cube'),
                             scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                          xaxis=list(title = "Time"),
-                                          yaxis =list(title = "Time"),
+                                          xaxis=list(title = "Standardised Time"),
+                                          yaxis =list(title = "Standardised Time"),
                                           zaxis=list(range=c(-0.01,0.1),title = "Sample Covariance (-1 < t < 1)"),
                                           aspectmode='cube'))
 
@@ -246,36 +239,35 @@ FE_leg <- basisfine %*% beta_leg
 par(mfrow = c(2,1))
 par(mar = c(5, 6, 4, 2) + 0.1, font.main = 1)
 plot(c(-1,1), c(0,3), type = "n",
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab =  expression(Log(Mass,~10^-5~g)),
      xlim = c(-1, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE)
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:N){
   lines(x_new[[i]], log_trait_list[[i]],type = "l", col = i)
 }
 lines(timegrid, sample_mean, type = "l", col = "red", lwd = 3.0, lty = "solid")
-axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-mtext("Log Mass Curves", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+mtext("Log Growth Curves", side = 3, adj = 0, line = 1, font = 2)
+axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 
 par(font.main = 1)
 plot(c(-1,1), c(0, 3), type = "n", 
-     xlab = "Time", 
-     ylab = "",
+     xlab = "Standardised Time", 
+     ylab = expression(Log(Mass,~10^-5~g)),
      xlim = c(-1, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 lines(timegrid, FE_leg, type = "l", lty = "dashed", cpl = "black")
 lines(timegrid, sample_mean, type = "l", col = "red")
 mtext("Fixed Effect", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
 legend("bottomright", legend= c("estimated FE", "sample mean"), lty = c("dashed", "solid"), bty = "n", col = c("black", "red"))
+axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
+
 #################################################################################################
 
 ### Random effects
@@ -295,8 +287,8 @@ fig4 <- fig4 %>% add_surface(z = ~CE_funLeg, x= timegrid, y = timegrid)
 fig_RR2 <- subplot(fig3, fig4) 
 fig_RR2 <- fig_RR2 %>% layout(scene = list(title = "",
                                            domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time") , 
+                                           xaxis =list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time") , 
                                            zaxis=list(range = c(-0.05, 0.3),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
                               scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
@@ -314,13 +306,13 @@ fig5 <- fig5 %>% add_surface(z = ~P_funLeg, x= timefine, y = timefine)
 fig_RR3 <- subplot(fig5, fig3) 
 fig_RR3 <- fig_RR3 %>% layout(title = "",
                               scene2 = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time") , 
+                                            xaxis=list(title = "Standardisd Time"),
+                                            yaxis =list(title = "Standardised Time") , 
                                             zaxis=list(range = c(-0.09, 0.7),title = "Phenotypic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'),
                               scene = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time"),
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time"),
                                            zaxis=list(range = c(-0.09, 0.7),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'))
 
@@ -349,19 +341,18 @@ FE_leg2 <- basisfine %*% beta_leg2
 par(mfrow = c(1,1))
 par(font.main = 1)
 plot(c(-1,1), c(0, 3), type = "n", 
-     xlab = "Time", 
-     ylab = "",
+     xlab = "Standardised Time", 
+     ylab = expression(Log(Mass,~10^-5~g)),
      xlim = c(-1, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 lines(timegrid, FE_leg2, type = "l", lty = "dashed", cpl = "black")
 lines(timegrid, sample_mean, type = "l", col = "red")
 mtext("Fixed Effect", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
 legend("bottomright", legend= c("estimated FE", "sample mean"), lty = c("dashed", "solid"), bty = "n", col = c("black", "red"))
+axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 
 ### Random effect
 vcLeg2 <- VarCorr(ffLeg2)
@@ -380,13 +371,13 @@ fig4 <- fig4 %>% add_surface(z = ~CE_funLeg2, x= timegrid, y = timegrid)
 fig_RR2 <- subplot(fig3, fig4) 
 fig_RR2 <- fig_RR2 %>% layout(scene = list(title = "",
                                            domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time") , 
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time") , 
                                            zaxis=list(range = c(-0.05, 0.5),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
                               scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time"),
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time"),
                                             zaxis=list(range = c(-0.05, 0.5), title = "Environmental Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'))
 
@@ -399,13 +390,13 @@ fig5 <- fig5 %>% add_surface(z = ~P_funLeg2, x= timegrid, y = timegrid)
 fig_RR3 <- subplot(fig5, fig3) 
 fig_RR3 <- fig_RR3 %>% layout(title = "",
                               scene2 = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time") , 
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time") , 
                                             zaxis=list(range = c(-0.09, 0.7),title = "Phenotypic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'),
                               scene = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time"),
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time"),
                                            zaxis=list(range = c(-0.09, 0.7),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'))
 
@@ -431,42 +422,40 @@ basis_new <- do.call(rbind, legBasis3_new)
 
 par(mfrow = c(1,2))
 plot(c(-1,1), c(-2,2), type = "n",
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(-1, 1), ylim = c(-2, 2), 
      xaxs = "i", yaxs = "i",
      axes = FALSE)
-axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:4){
   lines(x1[[1]], legBasis3_new[[1]][,i], col = i)
 }
 mtext("Orthogonal Legendre Poly of order 3 (Subject 1)", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0, lwd = 2)
 
 plot(c(-1,1), c(-2,2), type = "n",
-     xlab = "Time", 
+     xlab = "Standardised Time", 
      ylab = "",
      xlim = c(-1, 1), ylim = c(-2, 2), 
      xaxs = "i", yaxs = "i",
      axes = FALSE)
-axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0) 
-axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 for (i in 1:4){
   lines(x1[[2]], legBasis3_new[[2]][,i], col = i)
 }
 mtext("Orthogonal Legendre Poly of order 3 (Subject 2)", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
+axis(side = 1, at = seq(-1, 1, by = 0.1), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(-2, 2, by = 0.5), pos = 0, lwd = 2)
 ################################################################################################
 
 df_leg_new <-  data.frame(id = id, 
-                      trait = df$logtrait, 
-                      phi1 = basis_new[,1],
-                      phi2 = basis_new[,2],
-                      phi3 = basis_new[,3],
-                      phi4 = basis_new[,4])
+                          trait = df$logtrait, 
+                          phi1 = basis_new[,1],
+                          phi2 = basis_new[,2],
+                          phi3 = basis_new[,3],
+                          phi4 = basis_new[,4])
 
 fformLegendre3 <- trait ~ -1 + df_leg_new$phi1 + df_leg_new$phi2 + df_leg_new$phi3 + df_leg_new$phi4 +
   (-1 + df_leg_new$phi1 + df_leg_new$phi2 + df_leg_new$phi3 + df_leg_new$phi4 | df_leg_new$id) + 
@@ -493,19 +482,18 @@ FE_leg_new <- basisfine_new %*% beta_leg_new
 par(mfrow = c(1,1))
 par(font.main = 1)
 plot(c(-1,1), c(0, 3), type = "n", 
-     xlab = "Time", 
-     ylab = "",
+     xlab = "Standardised Time", 
+     ylab = expression(Log(Mass,~10^-5~g)),
      xlim = c(-1, 1), ylim = c(0,3), 
      xaxs = "i", yaxs = "i",
      axes = FALSE) 
-axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0) 
-axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0) 
-grid(nx = NULL, ny = NULL, col = "lightgray", lty = "solid")
+grid(nx = NULL, ny = NULL, lty = "solid",col = rgb(0.8, 0.8, 0.8, alpha = 0.5))
 lines(timegrid_new, FE_leg_new, type = "l", lty = "dashed", cpl = "black")
 lines(timegrid_new, sample_mean_new, type = "l", col = "red")
 mtext("Fixed Effect", side = 3, adj = 0, line = 1, font = 2)
-abline(h = 0, v=0)
 legend("bottomright", legend= c("estimated FE", "sample mean"), lty = c("dashed", "solid"), bty = "n", col = c("black", "red"))
+axis(side = 1, at = seq(-1, 1, by = 0.2), pos = 0, lwd = 2) 
+axis(side = 2, at = seq(0, 3, by = 0.5), pos = 0, lwd = 2) 
 
 ### Random effect
 vcLeg_new <- VarCorr(ffLeg_new)
@@ -524,13 +512,13 @@ fig4 <- fig4 %>% add_surface(z = ~CE_funLeg_new, x= timegrid_new, y = timegrid_n
 fig_RR2 <- subplot(fig3, fig4) 
 fig_RR2 <- fig_RR2 %>% layout(scene = list(title = "",
                                            domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time") , 
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time") , 
                                            zaxis=list(range = c(-0.01, 0.1),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'),
                               scene2 = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time"),
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time"),
                                             zaxis=list(range = c(-0.001, 0.01), title = "Environmental Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'))
 
@@ -543,13 +531,13 @@ fig5 <- fig5 %>% add_surface(z = ~P_funLeg_new, x= timegrid_new, y = timegrid_ne
 fig_RR3 <- subplot(fig5, fig3) 
 fig_RR3 <- fig_RR3 %>% layout(title = "",
                               scene2 = list(domain=list(x=c(0,0.45),y=c(0.25,1)),
-                                            xaxis=list(title = "Time"),
-                                            yaxis =list(title = "Time") , 
+                                            xaxis=list(title = "Standardised Time"),
+                                            yaxis =list(title = "Standardised Time") , 
                                             zaxis=list(range = c(-0.01, 0.1),title = "Phenotypic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                             aspectmode='cube'),
                               scene = list(domain=list(x=c(0.50,0.95),y=c(0.25,1)),
-                                           xaxis=list(title = "Time"),
-                                           yaxis =list(title = "Time"),
+                                           xaxis=list(title = "Standardised Time"),
+                                           yaxis =list(title = "Standardised Time"),
                                            zaxis=list(range = c(-0.01, 0.1),title = "Genetic Covariance (Log(Mass, 10<sup>-5</sup> g/t))"),
                                            aspectmode='cube'))
 
