@@ -1,4 +1,3 @@
-.libPaths("/users/k2368651/R/4.3")
 ## load packages 
 library(Matrix)
 library(MASS)
