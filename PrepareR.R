@@ -49,13 +49,13 @@ fit_genetic_fmm <- function(formula, data, A, nbasis, control = lmerControl()) {
   #' basis functions (principal components obtained from running FPCA).
   #'
   #' @param formula a two-sided linear formula object describing both the fixed-effects
-  #' and random-effects of the model (as the same form used in lmer).
-  #' @param data a data frame containing the variables named in formula.
+  #' and random-effects of the model (in the same form as used in lmer).
+  #' @param data a data frame containing the variables named in the formula.
   #' @param A a sparse matrix: an additive genetic relationship matrix 
   #' which models the genetic relationship in the dataset.
-  #' @param nbasis numeber/vector: number of basis used to fit the random effects 
+  #' @param nbasis number/vector: number of basis used to fit the random effects 
   #'        [basis for genetic, no. of basis for environment]
-  #' @param control lmerControl object: control parameters for the optimizer.
+  #' @param control lmerControl object: control parameters for the optimiser.
   #' @return returns a fitted mixed-effect model
   
   # Load required packages
