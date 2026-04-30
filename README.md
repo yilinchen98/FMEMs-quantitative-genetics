@@ -1,4 +1,17 @@
 # FMEMs-quantitative-genetics
-This is the PhD project at KCL about applying functional mixed-effect models in quantitative genetics.
-## Research Summary
-In evolutionary biology, function-valued traits, such as growth trajectories, are phenotypes of living organisms whose value can be described by a function of some continuous index. These traits can be assessed for continuous genetic variation using a quantitative genetic approach where one of the primary aims is to decompose the genetic and environmental variations. While existing literature has explored mixed effects models for such traits, this research uniquely focuses on using modern functional data analysis methodologies in quantitative genetics. The primary objective is to extend functional mixed-effect models for quantitative genetics experiments. A key secondary objective is to conduct an in-depth theoretical analysis, specifically addressing time and phase variation within these models. This focuses on improving our understanding of how traits change over time, while also accounting for variations that may arise from genetic factors or environmental influences.
+
+This repository stores the R code for two models in **A functional mixed-effects model for the joint analysis of amplitude and phase variations in function-valued traits** by Yilin Chen, Davide Pigoli, John A.D. Aston and Patrick A. Carter. 
+
+## Repository structure
+
+- `PrepareR.R`: contains packages and functions required to fit the proposed genetic mixed-effect model.
+- `AlignedFMEM/`
+1. `Section4_simulation_study/`: contains R code to simulate datasets used in the simulation study.
+
+    - `Sec4_1_Simulation_design.R`: This code simulate aligned curve data used in Section 4.1. 
+    - `Sec4_2_Simulation_results.R`: This code reproduces results for fitting the simulated data with the proposed genetic mixed-effects model displayed in Figure 1 - Figure 3.
+    - `Sec4_3_Bootstrap_simulation_results.R`: This code reproduces results for the bootstrap simulation and simultaneous confidence bands disaplayed in Figure 4 and Figure 5.
+    - `Simulation_boostrapping_process.R`:This code give an example of fit aligned FMEM to one of the simulated dataset and then carry on bootstrapping.
+    - `sim_results/`: contains simulated datasets, estimated fixed effect and covaraince functions and boostrap samples of the simulations.
+
+2.
