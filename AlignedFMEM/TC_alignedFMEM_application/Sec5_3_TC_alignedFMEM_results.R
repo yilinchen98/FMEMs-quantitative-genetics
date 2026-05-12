@@ -1,7 +1,7 @@
 # Fit the TC dataset (log10-transformed) with PCs as basis functions
 source("PrepareR.R")
 ## Load Data
-TRFUN25PUP4 <- read.delim("TC_data/TRFUN25PUP4.DAT",header = FALSE)
+TRFUN25PUP4 <- read.delim("TRFUN25PUP4.DAT",header = FALSE)
 names(TRFUN25PUP4) <- c("id","sire","dam","trait","x")
 df <- data.frame(TRFUN25PUP4)
 
