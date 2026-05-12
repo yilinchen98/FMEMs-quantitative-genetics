@@ -4,6 +4,7 @@ This repository stores the R code for two models in **A functional mixed-effects
 
 ## Repository structure
 
+- `TRFUN25PUP4.DAT`: the clean-up flour beetle growth curves dataset (miss data removed).
 - `PrepareR.R`: contains packages and functions required to fit the proposed genetic mixed-effect model.
 - `AlignedFMEM/`:
 1. `Section4_simulation_study/`: contains R code to simulate datasets used in the simulation study.
